@@ -1,8 +1,8 @@
 #include "include/Sys.h"
 
-int main(void){ //idk I did int argc, char* argv[], must been high
+int main(void){
 
-	//init_gdt();
+	init_gdt();
 	init_idt();
 	init_pic();
 	
