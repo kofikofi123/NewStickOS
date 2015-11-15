@@ -98,7 +98,7 @@ extern void irq_handler(struct Interrupt_parameters iparam){
 	uint8_t interrupt = (uint8_t)iparam.vendor_code - 32;
 	
 	if ((pic_irr() & interrupt) != interrupt){
-		*(volatile char*)0xB8002 = 0x39;
+		*(volatile char*)0xB8002 = 0x39;//
 		return;
 	}
 	
