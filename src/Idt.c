@@ -14,6 +14,10 @@ irq_handler_t irqs[15];
 extern void isr_handler(struct Interrupt_parameters iparam);
 extern void irq_handler(struct Interrupt_parameters iparam);
 static void encode_idt(uint8_t index, uint32_t offset, uint16_t selector, uint8_t type);
+void int50stub(void);
+extern void int50(void);
+
+//int test
 
 void init_idt(void){
   encode_idt(0, (unsigned)isr0, 0x08, 0x8F);
@@ -65,6 +69,7 @@ void init_idt(void){
   encode_idt(46, (unsigned)irq14, 0x08, 0x8F);
   encode_idt(47, (unsigned)isr15, 0x08, 0x8F);
   
+  encode_idt(80, (unsigned)int50stub, 0x08, 0x8E);
   
   idtp.size = sizeof(idtd) - 1;
   idtp.offset = (uint32_t)&idtd[0];
@@ -110,6 +115,11 @@ extern void irq_handler(struct Interrupt_parameters iparam){
 	}
 	
 	pic_EOI(interrupt);
+	return;
+}
+
+extern void int50(void){	
+	*(volatile char*)0xA0 = 0xF9;
 	return;
 }
 
