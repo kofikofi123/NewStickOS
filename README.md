@@ -10,3 +10,5 @@ Soon to come in boot2:
   
 Soon to come in bootloader:
   Clean up some of the useless code.
+
+This branch is for bootloaders to reside in fat filesystem
