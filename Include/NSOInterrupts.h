@@ -10,7 +10,6 @@ struct InterruptArguments {
     u32 vector_number;
     u32 cs, eip, error_code;
     u32 eflags;
-    u32 padding0;
 };
 
 typedef void(*InterruptServiceRoutine)(struct InterruptArguments*);
