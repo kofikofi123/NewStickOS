@@ -1,3 +1,3 @@
 git add --all
 git commit -m "oke"
-git push -f nso_master
+git push -f nos_master
