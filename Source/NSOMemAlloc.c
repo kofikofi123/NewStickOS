@@ -9,7 +9,7 @@ u32 pt[1024] __attribute__((aligned(4096)));
 
 
 
-
+//just testing vvv
 void kernel_initPaging(void){
     for (u16 i = 0; i < 1024; i++){
         pd[i] = 0x02;
@@ -26,7 +26,13 @@ void* kernel_findPhysicalAddress(u32 virtualAddress){
     u16 table = ((virtualAddress >> 12) & 0x3FF);
     u16 offset = (virtualAddress & 0xFFF);
     
+    u32* c_pd = &pd[directory];
+    u32* b_pt = (u32*)(*c_pd & 0xFFFFF000);
+    u32* c_pt = &b_pt[table];
     
+    u32 physicalAddress = (*c_pt & ~(0xFF));
+    
+    return (void*)(physicalAddress + offset);
 }
 
 void kernel_mapPage(u32 physicalAddress, u32 virtualAddress){

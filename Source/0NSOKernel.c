@@ -49,5 +49,17 @@ void kernel_main(void){
     kernel_initPaging();
     kernel_updatePaging();
     kernel_enablePaging();
+    
+    {
+        //testing
+        kernel_mapPage(0x500, 0x2000);
+        kernel_updatePaging();
+        
+        void* addr = kernel_findPhysicalAddress(0x2530);
+        
+        __asm__("mov eax, %0"
+                :
+                : "r" ((u32)addr));
+    }
     while(1);
 }
