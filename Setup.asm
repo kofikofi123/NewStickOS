@@ -111,31 +111,46 @@ entry:
     
     lea si, [error_message1]
     call Print_string
-    jmp short .jumper
+    jmp .jumper
 .setup_memory_table:
     mov eax, 0xE820
     mov ebx, 0x0000
-    mov di, 0x500
+    mov edi, 0x530
     mov ecx, 0x18
     mov edx, 0x534D4150
     
+    mov dword [edi + 20], 1
+    
     int 0x15
+    jmp .check_memory_table
 .loop_memory_table: ;repetitive
     mov eax, 0xE820
     mov ebx, dword [mq_code]
     mov ecx, 0x18 
     mov edx, 0x534D4150
+    mov dword [edi + 20], 1
     
     int 0x15
 .check_memory_table:
     jc short .error_memory_table
     cmp eax, 0x534D4150
     jne short .error_memory_table
+    cmp ecx, 20
+    je .mem_addr
+.check_acpi_extended:
+    cmp dword [edi + 20], 1
+    je .loop_memory_table
+.mem_addr:
     or ebx, ebx 
-    jz short .load_gdt
+    jz short .finish_up
     mov dword [mq_code], ebx
-    add edi, ecx
+    add edi, 0x18
+    inc dword [mem_entry_count]
     jmp short .loop_memory_table
+.finish_up:
+    mov eax, dword [mem_entry_count]
+    mov dword [0x500], eax
+    mov dword [0x518], 0x530 ;added this incase I decide to move memory map somewhere, and don't feel like replacing everything
 .load_gdt:
     lgdt [temp_gdtr]
     cli
@@ -183,7 +198,7 @@ mq_code: dd 0
 error_message1: db "Could not enable a20 bit", 0
 error_message2: db "Could not get memory map", 0
 test_str: db "eok", 0
-
+mem_entry_count: dd 0
 
 BITS 32 
 ALIGN 4

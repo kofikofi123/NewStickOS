@@ -21,5 +21,15 @@ void isr_1(struct InterruptArguments*);
 void isr_2(struct InterruptArguments*);
 void isr_3(struct InterruptArguments*);
 void isr_4(struct InterruptArguments*);
+void isr_5(struct InterruptArguments*);
+void isr_6(struct InterruptArguments*);
+void isr_7(struct InterruptArguments*);
+void isr_8(struct InterruptArguments*);
+void isr_9(struct InterruptArguments*);
+void isr_10(struct InterruptArguments*);
+void isr_11(struct InterruptArguments*);
+void isr_12(struct InterruptArguments*);
+void isr_13(struct InterruptArguments*);
+void isr_14(struct InterruptArguments*);
 
 #endif

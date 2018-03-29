@@ -2,11 +2,12 @@
 #include "NSOUtils.h"
 
 
-
-InterruptServiceRoutine kernel_interrupt_routines[256] = {isr_0, isr_1, isr_2, isr_3, isr_4};
+static void isr_placeholder(struct InterruptArguments*);
+InterruptServiceRoutine kernel_interrupt_routines[256] = {isr_0, isr_1, isr_2, isr_3, isr_4, isr_5, isr_6, isr_placeholder, isr_8, isr_placeholder, isr_placeholder, isr_placeholder, isr_placeholder, isr_placeholder, isr_14};
 
 void interrupt_handler(struct InterruptArguments arguments){
     InterruptServiceRoutine handler = kernel_interrupt_routines[arguments.vector_number];
+
     if (IS_NULL(handler)){
         kernel_cli();
         kernel_halt();
@@ -47,6 +48,20 @@ void isr_5(struct InterruptArguments* pArguments){
 }
 
 void isr_6(struct InterruptArguments* pArguments){
+    kernel_cli();
+    kernel_halt();
+}
+
+void isr_8(struct InterruptArguments* pArguments){
+    kernel_cli();
+    kernel_halt();
+}
+
+void isr_14(struct InterruptArguments* pArguments){
+    kernel_cli();
+    kernel_halt();
+}
+void isr_placeholder(struct InterruptArguments* pArgs){
     kernel_cli();
     kernel_halt();
 }

@@ -3,6 +3,8 @@ global int_debug
 global int_nmi
 global int_breakpoint
 global int_overflow
+global int_doubleFault
+global int_pageFault
 
 extern interrupt_handler
 
@@ -48,5 +50,30 @@ int_overflow:
     pusha
     call interrupt_handler
     popa 
+    add esp, 8
+    iret
+
+int_doubleFault:
+    push dword 8
+    pusha
+    call interrupt_handler
+    popa 
+    add esp, 8
+    iret
+    
+int_pageFault:
+    push dword 14
+    pusha 
+    call interrupt_handler
+    popa
+    add esp, 8
+    iret
+
+int_placeHolder:
+    push dword 0xFFFFFFFF
+    push dword 0xFFFFFFFF
+    pusha 
+    call interrupt_handler
+    popa
     add esp, 8
     iret

@@ -10,7 +10,8 @@ void kernel_initExceptions(void){
     kernel_setIDTEntry(&IDT[2], (u32)&(int_nmi), 0x08, 0, 0x8F);
     kernel_setIDTEntry(&IDT[3], (u32)&(int_breakpoint), 0x08, 0, 0x8F);
     kernel_setIDTEntry(&IDT[4], (u32)&(int_overflow), 0x08, 0, 0x8F);
-    
+    kernel_setIDTEntry(&IDT[8], (u32)&(int_doubleFault), 0x08, 0, 0x8F);
+    kernel_setIDTEntry(&IDT[14],(u32)&(int_pageFault), 0x08, 0, 0x8F);
     
     m_pseudo.limit = sizeof(IDT) - 1;
     m_pseudo.base = (u32)(&IDT[0]);

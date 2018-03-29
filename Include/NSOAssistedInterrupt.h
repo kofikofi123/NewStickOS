@@ -6,5 +6,7 @@ void int_debug(void);
 void int_nmi(void);
 void int_breakpoint(void);
 void int_overflow(void);
+void int_doubleFault(void);
+void int_pageFault(void);
 
 #endif
