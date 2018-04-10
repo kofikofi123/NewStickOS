@@ -2,7 +2,7 @@
 #include "NSOUtils.h"
 
 static const char* RSDP_SIGNATURE = "RSD PTR ";
-static struct RSDP* root;
+static struct RootDirectorySystemPointer* root = NULL;
 
 void kernel_initACPI(void){
     //check EBDA
@@ -25,11 +25,22 @@ void kernel_initACPI(void){
     root = rootAddr;
     
     
-    u64 test = kernel_checksum(root, 20);
+    u64 checksum = kernel_checksum(root, 20);
     
-    __asm__("mov eax, %0"
-            :
-            : "r" (test));
+    if ((checksum & 0xFF) != 0)
+        return;
     
-    kernel_halt();
+    if (kernel_isExtendedACPI()){
+        checksum = kernel_checksum(root, root->Length);
+        
+        if ((checksum & 0xFF) != 0)
+            return;
+    }
+}
+
+u8 kernel_isExtendedACPI(void){
+    if (root == NULL)
+        return 0;
+    
+    return (root->Revision == 0) ? 0 : 1;
 }

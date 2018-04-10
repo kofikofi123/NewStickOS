@@ -50,10 +50,10 @@ void* kernel_memscanString(const void* source, const void* source2, u32 length, 
 
 u64 kernel_checksum(void* addr, u32 length){
     u64 temp = 0;
-    u8* tempAddr = (u8*)addr;
-    u8* tempAddrEnd = tempAddr + length - 1;
+    s8* tempAddr = (s8*)addr;
+    s8* tempAddrEnd = tempAddr + length - 1;
     
-    while (tempAddr != tempAddrEnd){
+    while (tempAddr <= tempAddrEnd){
         temp = temp + (*tempAddr++);  
     }
     

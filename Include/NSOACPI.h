@@ -16,6 +16,7 @@ struct RootDirectorySystemPointer {
 };
 
 void kernel_initACPI(void);
+u8 kernel_isExtendedACPI(void);
 
 
 #endif
