@@ -16,4 +16,7 @@ void kernel_warn(const char*);
 void kernel_memcpy(const void*, void*, u32);
 void kernel_memset(const void*, u8, u32);
 
+void* kernel_memscanString(const void*, const void*, u32, u8);
+u64 kernel_checksum(void*, u32);
+
 #endif

@@ -3,9 +3,12 @@
 #include "NSODescriptors.h"
 #include "NSOCpuID.h"
 #include "NSOAPIC.h"
+#include "NSOACPI.h"
 #include "NSOMsr.h"
-#include "NSOMemMap.h"
 #include "NSOMemAlloc.h"
+#include "NSOMemMap.h"
+#include "NSOPaging.h"
+#include "NSOString.h"
 
 void kernel_test(void);
 
@@ -50,16 +53,7 @@ void kernel_main(void){
     kernel_updatePaging();
     kernel_enablePaging();
     
-    {
-        //testing
-        kernel_mapPage(0x500, 0x2000);
-        kernel_updatePaging();
-        
-        void* addr = kernel_findPhysicalAddress(0x2530);
-        
-        __asm__("mov eax, %0"
-                :
-                : "r" ((u32)addr));
-    }
+    
+    kernel_initACPI();
     while(1);
 }
