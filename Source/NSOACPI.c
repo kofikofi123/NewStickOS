@@ -36,6 +36,8 @@ void kernel_initACPI(void){
         if ((checksum & 0xFF) != 0)
             return;
     }
+
+    
 }
 
 u8 kernel_isExtendedACPI(void){

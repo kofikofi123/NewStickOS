@@ -64,19 +64,24 @@ Get_Disk_Extention:
     ret 
 
 Read_sector:;register destroyer
-    pusha
-    mov cx, 3
+    push cx 
+    push bx
+    push di
+    push si
+    mov ecx, 3
     mov word [disk_packet_struct.sectors_to_read], ax 
     mov word [disk_packet_struct.read_address], di
     mov word [disk_packet_struct.read_address + 2], bx 
-    mov dword [disk_packet_struct.lba_address], esi 
+    mov word [disk_packet_struct.lba_address], si 
 
 
 .begin:
     mov dl, [bdrive]
     lea si, [disk_packet_struct] ;ds should already be 0
     mov ah, 0x42
+    pusha
     int 0x13
+    popa
     jnc .noset
     loop .begin
     xor ax, ax 
@@ -84,7 +89,10 @@ Read_sector:;register destroyer
 .noset:
     mov ax, 1
 .fini:
-    popa 
+    pop si
+    pop di
+    pop bx
+    pop cx
     ret
 
 
@@ -152,7 +160,7 @@ Main:
     xor ax, ax 
     mov ds, ax
     mov es, ax 
-    
+
     cli
     mov ss, ax
     mov sp, 0x7BFF
@@ -160,6 +168,7 @@ Main:
     
     mov [bdrive], dl
     
+
     call Reset_drive 
 .check_exten:
     call Get_Disk_Extention
@@ -171,11 +180,20 @@ Main:
     mov si, 0x10
     lea di, [disk_buffer]
     mov bx, 0 
+    mov cx, 5
     jmp .repeat_read_until_primary
 .rep_counter:
     inc si
 .repeat_read_until_primary:
+    push cx
     call Read_sector
+    pop cx
+    or ax, ax
+    jnz .primary_read ;could have used loop ins
+    loop .repeat_read_until_primary
+    lea si, [error_message4]
+    jmp .errorout
+.primary_read:
     push ax
     
     mov al, 0x01
@@ -231,7 +249,9 @@ Main:
 .jump_to_setup:
     jmp disk_buffer
 .errorout:
+    pusha
     call Print_string
+    popa
 .loper:
     cli
     hlt
@@ -239,9 +259,9 @@ Main:
 ;variables
 bdrive: db 0
 
-error_message2: db "BIOS extention not supported\n", 0
-error_message4: db "Unknown error\n", 0
-error_message5: db "Missing files\n", 0
+error_message2: db "BIOS extention not supported", 0
+error_message4: db "Unknown error", 0
+error_message5: db "Missing files", 0
 error_message6: db "Could not find primary descriptor", 0
 
 kernel_file_name db "STICK.BIN;1"

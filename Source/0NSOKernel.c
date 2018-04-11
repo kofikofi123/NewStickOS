@@ -55,5 +55,6 @@ void kernel_main(void){
     
     
     kernel_initACPI();
+    
     while(1);
 }

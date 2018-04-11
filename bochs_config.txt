@@ -1,7 +1,9 @@
+ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14
 ata0-master: type=cdrom, path=StickOS.iso, status=inserted
 boot: cdrom 
+romimage: file=/home/chair/bochs-2.6.8/bios/BIOS-bochs-latest
 cpu: count=1, ips=1000000
 cpuid: vendor_string="THISISATEST!"
-display_library: term
+display_library: x
 port_e9_hack: enabled=1
-config_interface: textconfig
+magic_break: enabled=1
