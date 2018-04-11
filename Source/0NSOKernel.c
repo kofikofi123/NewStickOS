@@ -48,13 +48,13 @@ void kernel_main(void){
             
         }*/
     }//^^^^^^ MemMap stuff ^^^^^^
-    
+    //todo: will change init to return init status, and assets
     kernel_initPaging();
     kernel_updatePaging();
     kernel_enablePaging();
     
     
     kernel_initACPI();
-    
+
     while(1);
 }

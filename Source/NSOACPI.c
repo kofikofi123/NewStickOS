@@ -2,24 +2,21 @@
 #include "NSOUtils.h"
 
 static const char* RSDP_SIGNATURE = "RSD PTR ";
-static struct RootDirectorySystemPointer* root = NULL;
+static struct RSDP* root = NULL;
 
 void kernel_initACPI(void){
     //check EBDA
     void* bda = (void*)(0x400);
     
     u32 addr = (u32)(*(u16*)(bda + 0x0E)) << 4;
-    void* phyAddr = (void*)addr;
     
-    void* rootAddr = kernel_memscanString(phyAddr, RSDP_SIGNATURE, 0x400, 0x10);
+    void* rootAddr = kernel_memscanString((void*)addr, RSDP_SIGNATURE, 0x400, 0x10);
     
-    if (rootAddr == NULL){
-        phyAddr = (void*)0x0E0000;
-        rootAddr = kernel_memscanString(phyAddr, RSDP_SIGNATURE, 0x20000, 0x10);
-    }
-    
-    if (rootAddr == NULL){
-        return;
+    if (IS_NULL(rootAddr)){
+        rootAddr = kernel_memscanString((void*)0x0E0000, RSDP_SIGNATURE, 0x20000, 0x10);
+        if (IS_NULL(rootAddr)){
+            return;
+        }
     }
     
     root = rootAddr;
@@ -37,12 +34,28 @@ void kernel_initACPI(void){
             return;
     }
 
-    
+
 }
 
 u8 kernel_isExtendedACPI(void){
-    if (root == NULL)
+    if (IS_NULL(root))
         return 0;
     
     return (root->Revision == 0) ? 0 : 1;
+}
+
+struct RSDT* kernel_getRsdtACPI(void){
+    if (IS_NULL(root))
+        return NULL;
+
+    return (struct RSDT*)root->RSDTAddress;
+}
+
+void* kernel_getTableACPI(const char* tableName){
+    struct RSDT* rsdt = kernel_getRsdtACPI();
+
+    if (IS_NULL(rsdt))
+        return NULL;
+
+    return NULL; //for now
 }
