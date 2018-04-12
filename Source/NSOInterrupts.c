@@ -1,6 +1,7 @@
 #include "NSOInterrupts.h"
 #include "NSOUtils.h"
-
+#include "NSOPaging.h"
+#include "NSOBochs.h"
 
 static void isr_placeholder(struct InterruptArguments*);
 InterruptServiceRoutine kernel_interrupt_routines[256] = {isr_0, isr_1, isr_2, isr_3, isr_4, isr_5, isr_6, isr_placeholder, isr_8, isr_placeholder, isr_placeholder, isr_placeholder, isr_placeholder, isr_placeholder, isr_14};
@@ -56,10 +57,19 @@ void isr_8(struct InterruptArguments* pArguments){
     kernel_cli();
     kernel_halt();
 }
-
+//vvvvvvvvvvvvvv temporary vvvvvvvvvvvvvvvvvv
 void isr_14(struct InterruptArguments* pArguments){
-    kernel_cli();
-    kernel_halt();
+    u32 errorCode = pArguments->error_code;
+    u32 virtualAddr = 0;
+    __asm__("mov eax, cr2"
+            : "=a" (virtualAddr));
+
+    if ((errorCode & 0x01) == 0){
+        if ((errorCode & 0x04) == 0){
+            kernel_mapPage(virtualAddr, virtualAddr, 1);
+        }
+    }
+
 }
 void isr_placeholder(struct InterruptArguments* pArgs){
     kernel_cli();

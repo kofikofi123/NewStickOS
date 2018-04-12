@@ -37,7 +37,7 @@ void kernel_enablePaging(void);
 void kernel_disablePaging(void);
 void kernel_initPaging(void);
 void kernel_updatePaging(void);
-void kernel_mapPage(u32, u32);
+void kernel_mapPage(u32, u32, u8);
 void* kernel_findPhysicalAddress(u32);
 void kernel_loadPageDirectory(void*);
 

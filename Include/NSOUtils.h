@@ -19,4 +19,12 @@ void kernel_memset(const void*, u8, u32);
 void* kernel_memscanString(const void*, const void*, u32, u8);
 u64 kernel_checksum(void*, u32);
 
+
+void kernel_outB(u16, u8);
+void kernel_outW(u16, u16);
+void kernel_outDW(u16, u32);
+u8 kernel_inB(u16);
+u16 kernel_inW(u16);
+u32 kernel_inDW(u16);
+
 #endif

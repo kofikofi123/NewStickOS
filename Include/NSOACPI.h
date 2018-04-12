@@ -43,7 +43,7 @@ struct XRSDT {
 void kernel_initACPI(void);
 u8 kernel_isExtendedACPI(void);
 void* kernel_getTableACPI(const char*);
-struct RSDT* kernel_getRootTableACPI(void);
+struct RSDT* kernel_getRsdtACPI(void);
 
 
 

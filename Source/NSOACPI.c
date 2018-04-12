@@ -1,5 +1,6 @@
 #include "NSOACPI.h"
 #include "NSOUtils.h"
+#include "NSOBochs.h"
 
 static const char* RSDP_SIGNATURE = "RSD PTR ";
 static struct RSDP* root = NULL;
@@ -35,6 +36,12 @@ void kernel_initACPI(void){
     }
 
 
+    struct RSDT* rsdt = kernel_getRsdtACPI();
+
+    char OEMID[5] = {0};
+
+    kernel_memcpy(rsdt->Header.OEMID, OEMID, 4);
+    kernel_printStringBOCHS(OEMID);
 }
 
 u8 kernel_isExtendedACPI(void){
