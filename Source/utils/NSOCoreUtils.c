@@ -1,6 +1,6 @@
 #include "NSOCoreUtils.h"
 
-
+/*To comment*/
 
 void kernel_outb(u16 port, u8 data){
 	__asm__("out dx, al"
