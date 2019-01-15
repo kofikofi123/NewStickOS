@@ -58,7 +58,7 @@ u8 kernel_printStringBOCHS(const char* string){
  *
  * Return: Returns a boolean whether port is assumed to be active with bochs
  */
-u8 kernel_printNumberBOCHS(const u32 number){
+u8 kernel_printUNumberBOCHS(const u32 number){
 	if (!_kernel_bochs_debug_enabled()) 
 		return 0;
 
