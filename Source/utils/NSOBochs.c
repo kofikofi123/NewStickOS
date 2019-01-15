@@ -1,5 +1,6 @@
 #include "NSOBochs.h"
 #include "NSOCoreUtils.h"
+#include "NSOStringUtils.h"
 
 static u8 _kernel_bochs_debug_enabled();
 
@@ -57,11 +58,11 @@ u8 kernel_printStringBOCHS(const char* string){
  *
  * Return: Returns a boolean whether port is assumed to be active with bochs
  */
-u8 kernel_printNumberBOCHS(const u64 number){
+u8 kernel_printNumberBOCHS(const u32 number){
 	if (!_kernel_bochs_debug_enabled()) 
 		return 0;
 
-	u64 temp = number;
+	u32 temp = number;
 
 	while (temp != 0){
 		kernel_outb(0xE9, (temp % 10) | 0x30);
@@ -81,14 +82,14 @@ u8 kernel_printNumberBOCHS(const u64 number){
  *
  * Return: Returns a boolean whether port is assumed to be active with bochs
  */
-u8 kernel_printHexBOCHS(const u64 number){
+u8 kernel_printHexBOCHS(const u32 number){
 	if (!kernel_printStringBOCHS("0x"))
 		return 0;
 
 
 	u64 temp = number;
-	u64 mask = 0xF000000000000000;
-	u8 nibble = 0, shifts = 60;
+	u64 mask = 0xF0000000;
+	u8 nibble = 0, shifts = 28;
 
 	if (number > 0){
 		while (mask != 0){

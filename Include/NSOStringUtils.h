@@ -3,6 +3,6 @@
 
 #include "DataType.h"
 
-u64 kernel_stringLength(const char*);
+u32 kernel_stringLength(const char*);
 
 #endif

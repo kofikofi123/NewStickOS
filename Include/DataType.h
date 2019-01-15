@@ -1,6 +1,8 @@
 #ifndef _DATATYPE_H
 #define _DATATYPE_H
 
+#define NULL (void*)0
+
 typedef unsigned char u8;
 typedef signed char s8;
 
