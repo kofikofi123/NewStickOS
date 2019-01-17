@@ -4,5 +4,6 @@
 #include "DataType.h"
 
 u32 kernel_stringLength(const char*);
+u32 kernel_stringCount(const char*, const char);
 
 #endif

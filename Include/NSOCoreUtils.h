@@ -14,8 +14,22 @@ u16 kernel_inw(u16);
 u32 kernel_indw(u16);
 
 
-//On-basis basic varadic impl
+//unsafe Basis basic varadic impl
 
-
-
+#define kernel_va_start(va) \
+	__asm volatile("lea eax, [ebp + 12]\n\tmov %0, eax" \
+			: "=r" (va) \
+			: \
+			: "eax");
 #endif
+
+/*
+3
+2
+1
+4
+[eip]
+[ebp]
+
+
+*/
