@@ -23,13 +23,4 @@ u32 kernel_indw(u16);
 			: "eax");
 #endif
 
-/*
-3
-2
-1
-4
-[eip]
-[ebp]
-
-
-*/
+//EOF kernel data variable

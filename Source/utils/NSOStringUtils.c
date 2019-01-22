@@ -32,7 +32,7 @@ u32 kernel_stringLength(const char* string){
  *
  * Return: Returns a unsigned 32 bit number representing the number of occurances of {character}
  */
-u32 kernel_stringCount(const char* string, const char character){
+u32 kernel_stringOccurance(const char* string, const char character){
 	u32 count = 0;
 	u32 length = 0;
 

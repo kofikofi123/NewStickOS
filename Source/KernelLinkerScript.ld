@@ -5,6 +5,7 @@ OUTPUT_FORMAT("binary")
 SECTIONS 
 {
     . = 0x10000;
+    kernel_begin = .;
     .text :
     {
     	*(._main);
@@ -12,7 +13,8 @@ SECTIONS
     }
     .data : {*(.data);}
     .bss : {*(.bss);}
-    .kernel_end_data : {*(.kernel_end_data);}
+
+    kernel_end = .;
     /DISCARD/ :
     {
     	*(.comment)

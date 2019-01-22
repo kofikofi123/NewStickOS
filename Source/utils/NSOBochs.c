@@ -65,12 +65,15 @@ u8 __attribute__((cdecl)) kernel_printUNumberBOCHS(const u32 number){
 	u32 base = _kernel_bochs_find_base(number);
 	u32 temp = number;
 
-	while (base != 0){
-		kernel_outb(0xE9, (temp / base) | 0x30);
-		temp = temp % base;
-		base = base / 10;
+	if (number == 0)
+		kernel_outb(0xE9, 0x30);
+	else {
+		while (base != 0){
+			kernel_outb(0xE9, (temp / base) | 0x30);
+			temp = temp % base;
+			base = base / 10;
+		}
 	}
-
 	return 1;
 }
 

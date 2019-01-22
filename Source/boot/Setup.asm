@@ -213,7 +213,3 @@ protected_world:
     mov sp, 0x7E00-0x2000-1
     
     jmp 0x08:0x10000
-;mental notes for self
-;temp kernel code segment 1st half: 0x00 or ((0xA << 8)) or ((0x01 << 12)) or (0x00 << 13) or (0x01 << 15)
-;temp kernel code segment 2nd half: 0xF or (0x01 << 4) or (0x00 << 5) or (0x01 << 6) or (0x01 << 7) or (0x0000 <<  8)
-;temp kernel data segment 1st half: 0x00 or ((0x2 << 8)) or ((0x01 << 12)) or (0x00 << 13) or (0x01 << 15)
