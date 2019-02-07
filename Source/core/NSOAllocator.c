@@ -2,6 +2,7 @@
 #include "NSOBiosMaps.h"
 #include "NSOBochs.h"
 
+/*
 #define KERNEL_AU_PAGE 0xA0
 #define KERNEL_AU_MEM 0xA1
 #define KERNEL_AU_FREEC 0x01ABBEEF
@@ -30,9 +31,7 @@ static u32 _kernel_calculatePaddingSize(u32);
 static void _kernel_allocCombine(struct _kernel_AllocInfo*);
 static void _kernel_allocCombineGlobal();
 
-/* 
- * Function: kernel_init_allocation
- */
+
 void kernel_init_allocation(){
 	u32 k_end = (u32)&kernel_end;
 
@@ -121,7 +120,7 @@ void kernel_free(void* ptr){
 	_kernel_allocCombineGlobal();
 }
 
-/*
+
 void kernel_alloc_debug(){
 	struct _kernel_AllocInfo* temp = head.next;
 
@@ -131,7 +130,7 @@ void kernel_alloc_debug(){
 		temp = temp->next;
 	}
 	kernel_printStringBOCHS("}\n");
-}*/
+}
 
 static struct _kernel_AllocInfo* _kernel_findNearestNode(struct _kernel_AllocInfo* info){
 	struct _kernel_AllocInfo* ft = &head, *temp = ft->next;
@@ -147,7 +146,6 @@ static struct _kernel_AllocInfo* _kernel_findNearestNode(struct _kernel_AllocInf
 	return ft;
 } 
 
-/*
 static struct _kernel_AllocInfo* _kernel_allocFindNext(struct _kernel_AllocInfo* info){
 	struct _kernel_AllocInfo* temp = head->next;
 
@@ -155,7 +153,6 @@ static struct _kernel_AllocInfo* _kernel_allocFindNext(struct _kernel_AllocInfo*
 
 	}
 }
-*/
 
 static void _kernel_allocCombineGlobal(){
 	struct _kernel_AllocInfo* info = head.next, *temp = NULL;
@@ -193,4 +190,4 @@ static struct _kernel_AllocInfo* _kernel_findSpace(u32 size){
 
 static u32 _kernel_calculatePaddingSize(u32 size){
 	return (size + 0x04) & ~(0x03);
-}
+}*/
