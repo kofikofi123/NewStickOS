@@ -1,8 +1,10 @@
 CC := i686-elf-gcc
-CFLAGS := -Wall -std=c99 -I../../Include/
+CFLAGS := -Wall -masm=intel -std=c99 -I../../Include/
 
-SOURCES := $(wildcard *.c)
-OBJECTS := $(SOURCES:.c=.o)
+CSOURCES := $(wildcard *.c)
+ASOURCES := $(wildcard *.asm)
+OBJECTS := $(CSOURCES:.c=.o)
+OBJECTS := $(OBJECTS) $(ASOURCES:.asm=.o)
 
 compile: $(OBJECTS)
 	@echo "[Finished compiling core files]"
@@ -11,4 +13,5 @@ compile: $(OBJECTS)
 .PHONY: all
 all: $(OBJECTS)
 
+%.o: %.asm ; @nasm -f elf32 $< -o $@
 %.o: %.c ; @$(CC) $(CFLAGS) -o $@ -c $<

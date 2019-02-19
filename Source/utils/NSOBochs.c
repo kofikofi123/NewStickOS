@@ -100,12 +100,14 @@ u8 __attribute__((cdecl)) kernel_printHexBOCHS(const u32 number){
 	if (number > 0){
 		while (mask != 0){
 			nibble = (temp & mask) >> shifts;
-			if ((nibble > 0 && nibble < 10) || (nibble == 0 && zero_spam)){
+			if ((nibble > 0 && nibble < 10) || (nibble == 0 && zero_spam == 1)){
 				zero_spam = 1;
 				kernel_outb(0xE9, nibble | 0x30);
 			}
-			else if (nibble >= 10)
+			else if (nibble >= 10){
+				zero_spam = 1;
 				kernel_outb(0xE9, 0x61 + (nibble - 0x0A));
+			}
 			mask = mask >> 4;
 			shifts -= 4;
 		}

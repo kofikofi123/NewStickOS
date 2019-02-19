@@ -14,7 +14,7 @@ static u32 _kernel_getNextFree();
 static u8 _kernel_refillPageCache();
 
 
-u8 kernel_initPageAllocator(){
+void kernel_initPageAllocator(){
 	u32 true_end = ((((u32)(&kernel_end)) + 0x1000) & ~(0xFFF));
 	_kernel_end = (void*)true_end;
 
@@ -53,10 +53,10 @@ u8 kernel_initPageAllocator(){
 	}
 
 	_kernel_refillPageCache();
-	return 1;
+	return;
 }
 
-void* kernel_allocatePages(){
+void* kernel_allocatePage(){
 	void* final_page = NULL;
 
 	/*
@@ -98,7 +98,7 @@ static u8 _kernel_refillPageCache(){
 	return 1;
 }
 
-void kernel_freePages(void* addr){
+void kernel_freePage(void* addr){
 	//todo: I guess I should add a check
 	u32 addr_u = (u32)addr & ~(0xFFF);
 

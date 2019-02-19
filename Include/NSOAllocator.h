@@ -3,7 +3,7 @@
 
 #include "DataType.h"
 
-void kernel_init_allocation();
+void kernel_initAllocation();
 
 void* kernel_malloc(u32);
 void kernel_free(void*);

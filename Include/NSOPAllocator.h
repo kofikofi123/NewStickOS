@@ -3,8 +3,8 @@
 
 #define KERNEL_PAGE_CACHE_LIMIT 50
 
-u8 kernel_initPageAllocator();
-void* kernel_allocatePages();
-void kernel_freePages(void*);
+void kernel_initPageAllocator();
+void* kernel_allocatePage();
+void kernel_freePage(void*);
 
 #endif

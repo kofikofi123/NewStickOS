@@ -13,7 +13,20 @@ u8 kernel_inb(u16);
 u16 kernel_inw(u16);
 u32 kernel_indw(u16);
 
+//Flag manip functions
+void kernel_sti();
+void kernel_cli();
+u32 kernel_getEFLAGS();
+void kernel_setEFLAGS(u32);
 
+//others
+void kernel_panic(const char*) __attribute__((noreturn));
+void kernel_hlt();
+void kernel_cpuid(u32*, u32*, u32*, u32*);
+void kernel_getMaxCpuid();
+u8 kernel_checkStandardCpuid(u32);
+u8 kernel_checkExtendedCpuid(u32);
+u8 kernel_isCpuidSupported();
 //unsafe Basis basic varadic impl
 
 #define kernel_va_start(va) \
@@ -22,5 +35,3 @@ u32 kernel_indw(u16);
 			: \
 			: "eax");
 #endif
-
-//EOF kernel data variable
