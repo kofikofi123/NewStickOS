@@ -23,8 +23,8 @@ void kernel_initInterrupts(){
 	kernel_setupTrapGate(kernel_isr0, 0x08, 0, 0, 1, 1);
 	kernel_setupTrapGate(kernel_isr8, 0x08, 8, 0, 1, 1);
 
-	kernel_setupTrapGate(kernel_isr14, 0x08, 13, 0, 1, 1);
-	kernel_setupTrapGate(kernel_isr13, 0x08, 14, 0, 1, 1);
+	kernel_setupTrapGate(kernel_isr13, 0x08, 13, 0, 1, 1);
+	kernel_setupTrapGate(kernel_isr14, 0x08, 14, 0, 1, 1);
 
 	_kernel_local_pointer.size = sizeof(_kernel_local_IDT) - 1;
 	_kernel_local_pointer.location = (u32)_kernel_local_IDT;

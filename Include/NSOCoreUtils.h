@@ -24,6 +24,7 @@ void kernel_panic(const char*) __attribute__((noreturn));
 void kernel_hlt();
 void kernel_cpuid(u32*, u32*, u32*, u32*);
 void kernel_getMaxCpuid();
+void kernel_memset(void*, u8, u32);
 u8 kernel_checkStandardCpuid(u32);
 u8 kernel_checkExtendedCpuid(u32);
 u8 kernel_isCpuidSupported();

@@ -79,6 +79,11 @@ void* kernel_allocatePage(){
 	return final_page;
 }
 
+void kernel_markPage(u32 pageAddr){
+	pageAddr = pageAddr & ~(0xFFF);
+	*(_kernel_pBase + (pageAddr / 0x1000)) = 0xFF;	
+}
+
 static u8 _kernel_refillPageCache(){
 	u32 check = 0;
 	u8 i = 0;

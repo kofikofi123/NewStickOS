@@ -5,6 +5,7 @@
 
 void kernel_initPageAllocator();
 void* kernel_allocatePage();
+void kernel_markPage(u32);
 void kernel_freePage(void*);
 
 #endif

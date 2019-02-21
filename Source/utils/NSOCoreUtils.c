@@ -105,5 +105,12 @@ void kernel_getMaxCpuid(){
 	_kernel_maxCPUID = a;
 	a = 0x80000000;
 	kernel_cpuid(&a, &b, &c, &d);
+}
 
+void kernel_memset(void* mem, u8 val, u32 siz){
+	char* a = (char*)mem;
+	char* b = a + (siz - 1);
+
+	while (a != b)
+		*a++ = val;
 }
