@@ -33,6 +33,12 @@ static void _kernel_allocCombineGlobal();
 
 
 void kernel_init_allocation(){
+
+	void* newPage = kernel_allocatePage();
+
+	if (newPage == NULL) kernel_panic("Not enough memory\n");
+
+
 	u32 k_end = (u32)&kernel_end;
 
 	struct _kernel_AllocInfo* info = (struct _kernel_AllocInfo*)((k_end + 0x1000) & ~(0xFFF));

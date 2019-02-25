@@ -12,7 +12,7 @@ static u32* _kernel_getPageTable(u32);
 void kernel_initPaging(){
 	_kernel_local_pageDirectory = kernel_allocatePage();
 	if (_kernel_local_pageDirectory == NULL)
-		kernel_panic("What?");
+		kernel_panic("What? PD is null");
 
 	for (u16 i = 0; i < 1024; i++){
 		_kernel_local_pageDirectory[i] = 0x02;
@@ -26,25 +26,27 @@ void kernel_identityMap(u32 start, u32 end){
 	end = (end + 0x1000) & ~(0xFFF);
 }
 
-u8 kernel_mapIdentity(u32 addr, u16 pages){
+u8 kernel_mapIdentity(u32 addr, u32 pages, u8 flag){
 	addr = addr & ~(0xFFF);
-
 	u32* pt_addr = _kernel_getPageTable(addr);
-	if (pt_addr == NULL) return 0;
+	if (pt_addr == NULL){
+		pt_addr = kernel_loadPageTable(addr >> 22);
+		if (pt_addr == NULL) return 0;
+	}
 	u32* pt = &pt_addr[(addr >> 12) & 0x3FF];
 	while (pages-- > 0){
-		*pt = addr | 0x03;
+		*pt = addr | flag | 0x01;
 		pt++;
 		addr += 0x1000;
 	}
 	return 1;
 }
 
-u8 kernel_mapAddress(u32 physAddr, u32 virtAddr){
+u8 kernel_mapAddress(u32 physAddr, u32 virtAddr, u8 flag){
 	u32* pt_addr = _kernel_getPageTable(virtAddr);
 	if (pt_addr == NULL) return 0;
 	u32* pt = &pt_addr[(virtAddr >> 12) & 0x3FF];
-	*pt = physAddr | 0x03;
+	*pt = physAddr | flag | 0x01;
 	return 1;
 }
 
@@ -58,6 +60,13 @@ u32* kernel_loadPageTable(u16 pId){
 	return pt;
 }
 
+void* kernel_getPhysicalPage(u32 vAddr){
+	u32* pt_addr = _kernel_getPageTable(vAddr);
+	if (pt_addr == NULL) return NULL;
+	u32 pt = pt_addr[(vAddr >> 12) & 0x3FF];
+	return (void*)(pt >> 12);
+}
+
 static inline u8 _kernel_checkPagingBits(u32 ps, u8 bit){
 	return (ps >> bit) & 0x01;
 }
@@ -68,12 +77,33 @@ static u32* _kernel_getPageTable(u32 virtAddr){
 
 	u32* pt_addr = NULL;
 
-	if (!_kernel_checkPagingBits(pd, 8)){
-		pt_addr = kernel_loadPageTable(pId);
-	}else
+	if (_kernel_checkPagingBits(pd, 8))
 		pt_addr = (u32*)((pd & ~(0xFFF)));
 	
 	return pt_addr;
+}
+
+void* kernel_vAllocatePage(void* loc, u32 n, u8 flag){
+	u32 temp3 = (u32)loc;
+	
+	u32 pages = kernel_findPages(n);
+
+	if (pages == 0xFFFFFFFF) return NULL;
+
+	while (n-- > 0){
+		kernel_markPage(pages);
+		kernel_mapAddress(pages << 12, temp3, flag);
+		temp3 += 0x1000;
+		pages++;
+	}
+
+	return loc;
+}
+
+void kernel_vFreePage(void* loc){
+	if (loc == NULL) return;
+	//void* page = kernel_getPhysicalPage((u32)loc);
+
 }
 
 /*u8 kernel_reservePage(void*);

@@ -1,5 +1,6 @@
 #include "DataType.h"
 #include "NSOPAllocator.h"
+#include "NSOCoreUtils.h"
 #include "NSOBiosMaps.h"
 #include "NSOBochs.h"
 
@@ -38,19 +39,18 @@ void kernel_initPageAllocator(){
 	_kernel_pEnd = (_kernel_pBase + (sizor - 1));
 
 	u32 sp = (true_end / 0x1000);
-	u32 ep = ((u32)_kernel_pEnd + 0x1000) & ~(0xFFF);
+	u32 ep = (((u32)_kernel_pEnd + 0x1000) & ~(0xFFF))/0x1000;
 
-	for (i = sp; i <= ep; i++){
-		*(_kernel_pBase + i) = 0xFF;
-	}
-
-	for (i = 0; i <= sp; i++){
+	//kernel_memset(_kernel_pBase, 0, (u32)(_kernel_pEnd-_kernel_pBase));
+	
+	for (i = 0; i <= ep; i++){
 		*(_kernel_pBase + i) = 0xFF;
 	}
 
 	for (; i < maximumPageN; i++){
 		*(_kernel_pBase + i) = 0;
 	}
+
 
 	_kernel_refillPageCache();
 	return;
@@ -72,17 +72,18 @@ void* kernel_allocatePage(){
 
 		if (!_kernel_refillPageCache())
 			return final_page;
+
 	}
 
 	final_page = (void*)_kernel_page_cache[_kernel_page_cache_p++];
 
 	return final_page;
 }
-
+/*
 void kernel_markPage(u32 pageAddr){
 	pageAddr = pageAddr & ~(0xFFF);
 	*(_kernel_pBase + (pageAddr / 0x1000)) = 0xFF;	
-}
+}*/
 
 static u8 _kernel_refillPageCache(){
 	u32 check = 0;
@@ -91,11 +92,10 @@ static u8 _kernel_refillPageCache(){
 		check = _kernel_getNextFree();
 		if (check == 0) break;
 		check--;
-		*(_kernel_pBase + check) = 0xFF;
-		//kernel_printfBOCHS("%x\n", check * 0x1000);
+		*(_kernel_pBase + check) = 0xF0;
+		//kernel_printfBOCHS("%x\n", check * 0x1000);////////////////////////////////////////////////
 		_kernel_page_cache[i] = (check) * 0x1000;
 	}
-
 	if (i == 0) return 0;
 	_kernel_page_cache_l = i + 1;
 	_kernel_page_cache_p = 0;
@@ -110,6 +110,30 @@ void kernel_freePage(void* addr){
 	u32 pageN = addr_u / 0x1000;
 
 	*(_kernel_pBase + pageN) = 0;
+}
+
+void kernel_markPage(u32 pageAddr){
+	pageAddr = pageAddr & ~(0xFFF);
+	*(_kernel_pBase + (pageAddr / 0x1000)) = 0xFF;	
+}
+
+void kernel_markPageAddr(void* addr){
+	kernel_markPage(((u32)addr & ~(0xFFF))/0x1000);
+}
+
+u32 kernel_findPages(u32 pages){
+	u32 temp = 0;
+
+	for (u32 i = 0; i < maximumPageN; i++){
+		for (u32 j = i; j < i + pages; j++){
+			temp = *(_kernel_pBase + j);
+			//kernel_printfBOCHS("i: %x (%x)\n", j, temp);
+			if (temp != 0)
+				break;
+		}
+		if (temp == 0) return i;
+	}
+	return 0xFFFFFFFF;
 }
 
 
