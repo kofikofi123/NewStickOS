@@ -39,18 +39,17 @@ void kernel_initPageAllocator(){
 	_kernel_pEnd = (_kernel_pBase + (sizor - 1));
 
 	u32 sp = (true_end / 0x1000);
-	u32 ep = (((u32)_kernel_pEnd + 0x1000) & ~(0xFFF))/0x1000;
 
 	//kernel_memset(_kernel_pBase, 0, (u32)(_kernel_pEnd-_kernel_pBase));
 	
-	for (i = 0; i <= ep; i++){
+	for (i = 0; i <= sp; i++){
 		*(_kernel_pBase + i) = 0xFF;
 	}
 
 	for (; i < maximumPageN; i++){
 		*(_kernel_pBase + i) = 0;
 	}
-
+	
 
 	_kernel_refillPageCache();
 	return;

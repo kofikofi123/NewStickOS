@@ -26,7 +26,6 @@ kernel_enablePaging:
 	push eax
 	mov eax, cr0
 	or eax, 0x80000000
-	xchg bx, bx
 	mov cr0, eax
 	pop eax
 	ret
