@@ -27,5 +27,6 @@ void __attribute__((section("._main"))) kernel_main() {
 
 	}
 	
+	
 	while (1){}	
 }
