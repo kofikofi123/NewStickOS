@@ -16,20 +16,16 @@ void __attribute__((section("._main"))) kernel_main() {
 	kernel_getMaxCpuid();
 	kernel_initPaging();
 	kernel_mapIdentity(0, _kernel_end, 0x02);
-	//kernel_pciDebug(0, 1, 1);
-	__asm__("xchg bx, bx");
 	kernel_updatePaging();
 	kernel_enablePaging();
 
 	{
-		void* test = kernel_allocatePage();
-		//kernel_printfBOCHS("OKR\n");
-		if (test == NULL) kernel_panic(" ");
-		kernel_printfBOCHS("Addr: %x\n", (u32)test);
-		kernel_mapAddress((u32)test, (u32)test, 0x02);
-		//kernel_memset(test, 0xFF, 4096);
-	}
-	int a = 32;
+		void* temp = kernel_vAllocatePage(0x50000, 5, 0x02);
+		kernel_memset(temp, 0xFF, 5 * 0x1000);
+		__asm__("xchg bx, bx");
+		kernel_vFreePage(0x50000, 5);
 
+	}
+	
 	while (1){}	
 }
