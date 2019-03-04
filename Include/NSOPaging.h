@@ -15,7 +15,8 @@ void kernel_vFreePage(u32, u32);
 
 void kernel_enablePaging();
 void kernel_updatePaging();
-void kernel_loadPageDirectory();
+void kernel_invalidatePaging(void*);
+void kernel_loadPageDirectory(void*);
 
 
 #endif
