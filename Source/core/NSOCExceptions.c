@@ -23,5 +23,5 @@ void kernel_doubleFaultEX(struct kernel_IRegs iregs){
 }
 
 void kernel_pagingEX(struct kernel_IRegs iregs){
-	
+	kernel_panic("Paging fault");
 }

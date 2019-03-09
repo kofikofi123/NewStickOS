@@ -21,15 +21,11 @@ struct kernel_IDT {
 };
 
 
-typedef void(*kernel_InterruptFunc)(struct kernel_IRegs); //prob not a good way
-
 void kernel_initInterrupts();
 
 void kernel_setupInterruptGate(void*, u16, u8, u8, u8, u8);
 void kernel_setupTrapGate(void*, u16, u8, u8, u8, u8);
 void kernel_flushIDT(const struct kernel_DescriptorPointers*);
-const char* kernel_reserveIRQ(u8, kernel_InterruptFunc);
-void kernel_freeIRQ(u8, const char*);
 
 
 #endif

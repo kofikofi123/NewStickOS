@@ -3,7 +3,6 @@
 
 
 struct kernel_IDT __attribute__((aligned(8))) _kernel_local_IDT[256] = {0};
-kernel_InterruptFunc _kernel_irqHandler[256-32] = {0};
 struct kernel_DescriptorPointers _kernel_local_pointer;
 
 static void _kernel_encodeIDT(struct kernel_IDT*, u32, u16, u8, u16);

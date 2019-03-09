@@ -7,7 +7,7 @@ compile_source:
 	@make -C core 
 	@mv -f ./core/*.o ../Build
 	@make -C devices
-	@#mv -f ./devices/*.o ../Build
+	@mv -f ./devices/*.o ../Build
 	@make -C utils
 	@mv -f ./utils/*.o ../Build
 

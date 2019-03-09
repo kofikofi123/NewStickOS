@@ -52,6 +52,7 @@ void kernel_initPageAllocator(){
 	
 
 	_kernel_refillPageCache();
+	
 	return;
 }
 

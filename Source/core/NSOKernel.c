@@ -6,27 +6,34 @@
 #include "NSOCoreUtils.h"
 #include "NSOPCI.h"
 #include "NSOPaging.h"
+#include "NSOCacheControl.h"
 
 extern u32 kernel_end;
 void __attribute__((section("._main"))) kernel_main() {
 	u32 _kernel_end = (u32)&kernel_end;
+
+	
 	kernel_initMemMapB();
+
 	kernel_initPageAllocator();
+
 	kernel_initInterrupts();
+
+	//get max cpuid's
 	kernel_getMaxCpuid();
+
+	//init paging
 	kernel_initPaging();
 	kernel_mapIdentity(0, _kernel_end, 0x02);
 	kernel_updatePaging();
 	kernel_enablePaging();
+	//
 
 	{
-		void* temp = kernel_vAllocatePage(0x50000, 5, 0x02);
-		kernel_memset(temp, 0xFF, 5 * 0x1000);
-		__asm__("xchg bx, bx");
-		kernel_vFreePage(0x50000, 5);
+		u32 maxAddr = kernel_getLargestAddr() & ~(0xFFF);
+		kernel_mapAddress(maxAddr, maxAddr, 0x02);
 
 	}
-	
 	
 	while (1){}	
 }

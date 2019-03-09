@@ -5,26 +5,26 @@
 static u32 _kernel_maxCPUID = 0, _kernel_maxCPUIDEX = 0;
 
 void kernel_outb(u16 port, u8 data){
-	__asm__("out dx, al"
+	__asm__ volatile ("out dx, al"
 			:
 			: "d" (port), "a" (data));
 }
 
 void kernel_outw(u16 port, u16 data){
-	__asm__("out dx, ax"
+	__asm__ volatile ("out dx, ax"
 			:
 			: "d" (port), "a" (data));
 }
 
 void kernel_outdw(u16 port, u32 data){
-	__asm__("out dx, eax"
+	__asm__ volatile ("out dx, eax"
 			:
 			: "d" (port), "a" (data));
 }
 
 u8 kernel_inb(u16 port){
 	u8 data = 0;
-	__asm__("in al, dx"
+	__asm__ volatile ("in al, dx"
 			: "=a" (data)
 			: "d" (port));
 	return data;
@@ -32,7 +32,7 @@ u8 kernel_inb(u16 port){
 
 u16 kernel_inw(u16 port){
 	u16 data = 0;
-	__asm__("in ax, dx"
+	__asm__ volatile ("in ax, dx"
 			: "=a" (data)
 			: "d" (port));
 	return data;
@@ -40,7 +40,7 @@ u16 kernel_inw(u16 port){
 
 u32 kernel_indw(u16 port){
 	u32 data = 0;
-	__asm__("in eax, dx"
+	__asm__ volatile ("in eax, dx"
 			: "=a" (data)
 			: "d" (port));
 	return data;
@@ -60,13 +60,13 @@ inline void kernel_hlt(){
 
 u32 kernel_getEFLAGS(){
 	u32 eflag = 0;
-	__asm__("pushfd\n\tpop eax"
+	__asm__ volatile ("pushfd\n\tpop eax"
 			: "=a" (eflag));
 	return eflag;
 }
 
 void kernel_setEFLAGS(u32 eflag){
-	__asm__("push eax\n\tpopfd"
+	__asm__ volatile ("push eax\n\tpopfd"
 			:
 			: "a" (eflag));
 }
@@ -86,7 +86,8 @@ u8 kernel_isCpuidSupported(){
 }
 
 void kernel_cpuid(u32* eax, u32* ebx, u32* ecx, u32* edx){
-	__asm__("cpuid"
+
+	__asm__ volatile("cpuid"
 			: "=a" (*eax), "=b" (*ebx), "=c" (*ecx), "=d" (*edx)
 			: "a" (*eax));
 }
@@ -113,4 +114,18 @@ void kernel_memset(void* mem, u8 val, u32 siz){
 
 	while (a != b)
 		*a++ = val;
+}
+
+void kernel_wrmsr(u32 c, u64 da){
+	__asm__ volatile ("wrmsr"
+					  :
+					  : "c" (c), "d" ((u32)(da >> 32)), "a" ((u32)(da & 0xFFFFFFFF)));
+}
+
+u64 kernel_rdmsr(u32 c){
+	u32 hi = 0, lo = 0;
+	__asm__ volatile ("rdmsr"
+					  : "=d" (hi), "=a"(lo)
+					  : "c" (c));
+	return ((u64)hi << 32) | (lo);
 }
