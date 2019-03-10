@@ -25,6 +25,8 @@ void kernel_hlt();
 void kernel_cpuid(u32*, u32*, u32*, u32*);
 void kernel_getMaxCpuid();
 void kernel_memset(void*, u8, u32);
+void kernel_memcpy(void*, const void*, u32);
+s8 kernel_memcmp(const void*, const void*, u32);
 u8 kernel_checkStandardCpuid(u32);
 u8 kernel_checkExtendedCpuid(u32);
 u8 kernel_isCpuidSupported();

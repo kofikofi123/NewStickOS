@@ -110,10 +110,23 @@ void kernel_getMaxCpuid(){
 
 void kernel_memset(void* mem, u8 val, u32 siz){
 	char* a = (char*)mem;
-	char* b = a + (siz - 1);
+	char* b = a + (siz);
 
 	while (a != b)
 		*a++ = val;
+}
+
+void kernel_memcpy(void* memA, const void* memB, u32 size){
+	char* a = (char*)memA;
+	char* b = (char*)memB;
+	char* c = a + size;
+
+	while (a != c)
+		*a++ = *b++;
+}
+
+s8 kernel_memcmp(const void* memA, const void* memB, u32 size){
+	
 }
 
 void kernel_wrmsr(u32 c, u64 da){

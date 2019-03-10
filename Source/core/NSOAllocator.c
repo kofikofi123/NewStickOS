@@ -42,16 +42,15 @@ void* kernel_malloc(u32 size, u8 alignment){
 	if (node == NULL) return NULL;
 
 	struct _kernel_AllocNode* oldPrev = node->prev, *oldNext = node->next;
-	u32 oldSize = node->size;
+	//u32 oldSize = node->size;
 
 	u32 total_size = paddingSize + size + residueBytes;
 
-	u32* sizor = (u32*)node;
+	u32* sizor = (void*)node + residueBytes;
 
 	*sizor++ = 0x80000000 | total_size;
 
-	void* final = (void*)sizor + residueBytes;
-
+	void* final = (void*)(sizor++);
 
 	struct _kernel_AllocNode* node2 = (void*)node + total_size;
 
@@ -66,6 +65,22 @@ void* kernel_malloc(u32 size, u8 alignment){
 	oldPrev->next = node2;
 
 	return final;
+}
+
+void kernel_free(void* ptr){
+	if (ptr == NULL) return;
+
+	if ((u32)ptr < 0xC0000000) return;
+
+	u32* temp = ((u32*)ptr) - 1;
+
+	u32 size = *temp;
+
+	if ((size & 0x80000000) != 0x80000000) return;
+
+	size = size & ~(0x80000000);
+
+	kernel_printfBOCHS("SIze: %x\n", size);
 }
 
 static struct _kernel_AllocNode* _kernel_allocatorFindSpace(u32 allocSize, u8 alignment, u32* paddingSize, u32* residueBytes){

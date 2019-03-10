@@ -6,17 +6,18 @@
 #include "NSOCoreUtils.h"
 #include "NSOPCI.h"
 #include "NSOPaging.h"
+#include "NSOACPI.h"
 #include "NSOCacheControl.h"
 
 extern u32 kernel_end;
 void __attribute__((section("._main"))) kernel_main() {
 	u32 _kernel_end = (u32)&kernel_end;
 
-	
+	//grab memory pges
 	kernel_initMemMapB();
-
+	//init page allocator
 	kernel_initPageAllocator();
-
+	//init base interrupts
 	kernel_initInterrupts();
 
 	//get max cpuid's
@@ -28,11 +29,16 @@ void __attribute__((section("._main"))) kernel_main() {
 	kernel_updatePaging();
 	kernel_enablePaging();
 	
-
+	//init kernel heaap
 	kernel_initAllocation();
-	kernel_printfBOCHS("aligned addr: %x\n", kernel_malloc(10, 8));
-	kernel_printfBOCHS("aligned addr: %x\n", kernel_malloc(10, 8));
-	kernel_printfBOCHS("aligned addr: %x\n", kernel_malloc(10, 8));
 	
+	kernel_initACPI();
+
+	{
+		void* temp = kernel_malloc(10, 8);
+		
+		kernel_free(temp);
+	}
+
 	while (1){}	
 }
