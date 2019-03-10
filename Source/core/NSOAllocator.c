@@ -14,7 +14,7 @@ struct _kernel_AllocNode head;
 struct _kernel_AllocNode* end;
 
 static u8 _kernel_extendHEAP(u32);
-static struct _kernel_AllocNode* _kernel_allocatorFindSpace(u32, u8, u32*, u32*);
+static struct _kernel_AllocNode* _kernel_allocatorFindSpace(u32, u8, u8*, u8*);
 
 void kernel_initAllocation(){
 	struct _kernel_AllocNode* temp = NULL;
@@ -34,8 +34,8 @@ void kernel_initAllocation(){
 
 
 void* kernel_malloc(u32 size, u8 alignment){
-	u32 paddingSize = 0;
-	u32 residueBytes = 0;
+	u8 paddingSize = 0;
+	u8 residueBytes = 0;
 
 	struct _kernel_AllocNode* node = _kernel_allocatorFindSpace(size, alignment, &paddingSize, &residueBytes);
 
@@ -44,13 +44,17 @@ void* kernel_malloc(u32 size, u8 alignment){
 	struct _kernel_AllocNode* oldPrev = node->prev, *oldNext = node->next;
 	//u32 oldSize = node->size;
 
-	u32 total_size = paddingSize + size + residueBytes;
+	u32 total_size = paddingSize + size + residueBytes + 4;
 
-	u32* sizor = (void*)node + residueBytes;
 
-	*sizor++ = 0x80000000 | total_size;
+	u32* sizor = (u32*)node;
 
-	void* final = (void*)(sizor++);
+	*sizor++ = 0x80000000 | size;
+
+	u16* paddingB = (void*)sizor + residueBytes;
+	*paddingB = ((u16)residueBytes << 8) | paddingSize;
+
+	void* final = (void*)paddingB + 2;
 
 	struct _kernel_AllocNode* node2 = (void*)node + total_size;
 
@@ -72,24 +76,39 @@ void kernel_free(void* ptr){
 
 	if ((u32)ptr < 0xC0000000) return;
 
-	u32* temp = ((u32*)ptr) - 1;
+	u16* vpr = ((u16*)ptr) - 1;
 
-	u32 size = *temp;
+	u16 pr = *vpr;
 
-	if ((size & 0x80000000) != 0x80000000) return;
+	u8 residueBytes = (pr >> 8);
+	u8 paddingBytes = (pr & 0xFF);
 
-	size = size & ~(0x80000000);
+	u32* header = (void*)vpr - residueBytes - 4;
+	u32 allocSize = *header;
 
-	kernel_printfBOCHS("SIze: %x\n", size);
+	if ((allocSize & 0x80000000) != 0x80000000) return;
+
+	allocSize = allocSize & ~(0x80000000);
+
+	u32 totalSize = allocSize + residueBytes + paddingSize + 4;
+
+	struct _kernel_AllocNode* newNode = header, *prevNode = NULL;
+
+	newNode->size = totalSize;
+	newNode->next = NULL;
+	newNode->prev = NULL;
+
+	prevNode = _kernel_findNearestNode(newNode);
 }
 
-static struct _kernel_AllocNode* _kernel_allocatorFindSpace(u32 allocSize, u8 alignment, u32* paddingSize, u32* residueBytes){
+static struct _kernel_AllocNode* _kernel_allocatorFindSpace(u32 allocSize, u8 alignment, u8* paddingSize, u8* residueBytes){
 	struct _kernel_AllocNode* node = head.next;
 
 	u32 addr = 0, addr2 = 0;
-	u32 tal = 0, lat = 0;
+	u8 tal = 0, lat = 0;
 	while (node != end){
-		addr = ((u32)node + 4);
+		//needed to add padding attrib
+		addr = ((u32)node + 6);
 
 		if ((addr % alignment) != 0){
 			addr2 = (addr + alignment) & ~(alignment - 1);
@@ -97,13 +116,14 @@ static struct _kernel_AllocNode* _kernel_allocatorFindSpace(u32 allocSize, u8 al
 			addr = addr2;
 		}
 
+
 		if ((addr % 4) != 0){
 			addr2 = (addr + 4) & ~(3);
 			lat = (addr2 - addr);
 		}
 
 
-		if ((node->size + tal) >= allocSize){
+		if ((node->size + tal + lat) >= allocSize){
 			*residueBytes = tal;
 			*paddingSize = lat;
 			return node;
