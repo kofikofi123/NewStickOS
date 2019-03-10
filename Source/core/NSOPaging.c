@@ -44,7 +44,6 @@ void kernel_initPaging(){
 }
 
 u8 kernel_mapAddress(u32 virtAddr, u32 physAddr, u8 flags){
-	kernel_printfBOCHS("OKR: %x\n", _kernel_isPagingEnabled());
 	if (_kernel_isPagingEnabled())
 		return _kernel_mapAddressR(virtAddr, physAddr, flags);
 	else
@@ -60,7 +59,6 @@ static u8 _kernel_mapAddressN(u32 virtAddr, u32 physAddr, u8 flags){
 }
 
 static u8 _kernel_mapAddressR(u32 virtAddr, u32 physAddr, u8 flags){
-	kernel_printfBOCHS("Recursive kernel mapping\n");
 	u32 pId = (virtAddr >> 22);
 	u32 ptId = ((virtAddr >> 12) & 0x3FF);
 	u32* pd_p = (u32*)(0xFFFFF000 + ((pId) << 2));
@@ -81,7 +79,7 @@ static u8 _kernel_mapAddressR(u32 virtAddr, u32 physAddr, u8 flags){
 }
 
 void kernel_unmapAddress(u32 virtAddr){
-		
+	
 }
 
 void kernel_unmapIdentity(u32 from, u32 to){
@@ -126,7 +124,7 @@ static inline u32* _kernel_getPageDirR(u32 virtAddr){
 	return &_kernel_local_pageDirectory[(virtAddr >> 22)];
 }
 
-static void _kernel_loadPageDirectory(u16 pId, u32 addr, u8 flags){
+static inline void _kernel_loadPageDirectory(u16 pId, u32 addr, u8 flags){
 	_kernel_local_pageDirectory[pId] = addr | flags | 0x01;
 }
 

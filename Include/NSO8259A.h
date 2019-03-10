@@ -4,5 +4,6 @@
 #include "DataType.h"
 
 u8 kernel_init8259A();
+void kernel_deinit8259A();
 
 #endif

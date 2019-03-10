@@ -6,13 +6,13 @@ SECTIONS
 {
     . = 0x10000;
     kernel_begin = .;
-    .text :
+    .text ALIGN(4k) :
     {
     	*(._main);
     	*(.text);
     }
-    .data : {*(.data);}
-    .bss : {*(.bss);}
+    .data ALIGN(4k) : {*(.data);}
+    .bss ALIGN(4k) : {*(.bss);}
 
 
     kernel_end = .;

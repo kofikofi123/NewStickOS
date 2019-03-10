@@ -27,13 +27,12 @@ void __attribute__((section("._main"))) kernel_main() {
 	kernel_mapIdentity(0, _kernel_end, 0x02);
 	kernel_updatePaging();
 	kernel_enablePaging();
-	//
+	
 
-	{
-		u32 maxAddr = kernel_getLargestAddr() & ~(0xFFF);
-		kernel_mapAddress(maxAddr, maxAddr, 0x02);
-
-	}
+	kernel_initAllocation();
+	kernel_printfBOCHS("aligned addr: %x\n", kernel_malloc(10, 8));
+	kernel_printfBOCHS("aligned addr: %x\n", kernel_malloc(10, 8));
+	kernel_printfBOCHS("aligned addr: %x\n", kernel_malloc(10, 8));
 	
 	while (1){}	
 }

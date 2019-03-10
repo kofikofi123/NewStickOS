@@ -4,6 +4,10 @@
 #include "NSOBiosMaps.h"
 #include "NSOBochs.h"
 
+/*
+TODO: add restrictions on pages that are marked as unusable by ACPI memory map
+*/
+
 u32 _kernel_page_cache[KERNEL_PAGE_CACHE_LIMIT] = {0};
 u8 _kernel_page_cache_p = 0, _kernel_page_cache_l = 0;
 u8 *_kernel_pBase = NULL, *_kernel_pEnd = NULL;

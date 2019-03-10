@@ -23,5 +23,12 @@ void kernel_doubleFaultEX(struct kernel_IRegs iregs){
 }
 
 void kernel_pagingEX(struct kernel_IRegs iregs){
-	kernel_panic("Paging fault");
+	u32 error_code = iregs.error_code;
+	u32 vaddr_cause = 0;
+	__asm__ volatile ("mov eax, cr2"
+					  : "=a" (vaddr_cause));
+
+
+	kernel_printfBOCHS("Paging Fault!!\nVaddr: %x\nError code: %x", vaddr_cause, error_code);
+	kernel_panic("");
 }
