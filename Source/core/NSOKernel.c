@@ -35,11 +35,18 @@ void __attribute__((section("._main"))) kernel_main() {
 	kernel_initACPI();
 
 	{
+		kernel_debugAllocator();
 		void* tempA = kernel_malloc(1, 1);
 		void* tempB = kernel_malloc(10, 8);
+		//kernel_debugAllocator();
+		//kernel_free(tempA);
 
-		kernel_printfBOCHS("TempA: %x\nTempB: %x\n", tempA, tempB);
-		kernel_free(tempB);
+		kernel_printfBOCHS("TempA = %x, TempB = %x\n", (u32)tempA, (u32)tempB);
+		//kernel_debugAllocator();
+		
+		//kernel_free(tempA);
+		//kernel_free(tempB);
+		//kernel_debugAllocator();
 	}
 
 	while (1){}	
