@@ -7,7 +7,7 @@ extern u32 kernel_end;
 static u32* _kernel_local_pageDirectory;
 
 
-static u32* _kernel_getPageDir(u32);
+//static u32* _kernel_getPageDir(u32);
 static u32* _kernel_getPageDirR(u32);
 
 static u8 _kernel_mapAddressR(u32, u32, u8);
@@ -54,7 +54,7 @@ static u8 _kernel_mapAddressN(u32 virtAddr, u32 physAddr, u8 flags){
 	//kernel_printfBOCHS("Normal kernel mapping\n");
 	u32 pd = *_kernel_getPageDirR(virtAddr);
 	u32* pt = (u32*)(pd & ~(0xFFF));
-	pt[(virtAddr >> 12) & 0x3FF] = physAddr | flags | 0x03; 
+	pt[(virtAddr >> 12) & 0x3FF] = physAddr | flags | 0x01; 
 	return 1;
 }
 
@@ -78,12 +78,33 @@ static u8 _kernel_mapAddressR(u32 virtAddr, u32 physAddr, u8 flags){
 	return 1;
 }
 
+static void _kernel_unmapAddressR(u32 virtAddr){
+	u32 pId = (virtAddr >> 22);
+	u32 ptId = ((virtAddr >> 12) & 0x3FF);
+	u32* pd_p = (u32*)(0xFFFFF000 + ((pId) << 2));
+	u32 pd = *pd_p;
+	u32* v_new_table = (u32*)(0xFFC00000 + ((pId << 12)));
+
+	if ((pd & 1) == 1)
+		v_new_table[ptId] = 0;
+}
+
+static void _kernel_unmapAddressN(u32 virtAddr){
+	u32 pd = *_kernel_getPageDirR(virtAddr);
+	u32* pt = (u32*)(pd & ~(0xFFF));
+	pt[(virtAddr >> 12) & 0x3FF] = 0; 
+}
+
 void kernel_unmapAddress(u32 virtAddr){
-	
+	//todo, too lazy
+	if (_kernel_isPagingEnabled())
+		return _kernel_unmapAddressR(virtAddr);
+	else
+		return _kernel_unmapAddressN(virtAddr);
 }
 
 void kernel_unmapIdentity(u32 from, u32 to){
-
+	//todo, too lazy
 }
 
 //for now, I guess I will just take the performance hit

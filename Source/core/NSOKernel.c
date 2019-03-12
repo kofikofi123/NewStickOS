@@ -44,8 +44,14 @@ void __attribute__((section("._main"))) kernel_main() {
 		kernel_printfBOCHS("TempA = %x, TempB = %x\n", (u32)tempA, (u32)tempB);
 		//kernel_debugAllocator();
 		
-		//kernel_free(tempA);
-		//kernel_free(tempB);
+		kernel_free(tempA);
+		kernel_debugAllocator();
+		kernel_free(tempB);
+		kernel_debugAllocator();
+
+		kernel_mapAddress(0x20000, 0x20000, 0x02);
+		__asm__("xchg bx, bx");
+		kernel_unmapAddress(0x20000);
 		//kernel_debugAllocator();
 	}
 

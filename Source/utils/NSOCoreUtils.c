@@ -126,7 +126,7 @@ void kernel_memcpy(void* memA, const void* memB, u32 size){
 }
 
 s8 kernel_memcmp(const void* memA, const void* memB, u32 size){
-	
+	return 0;
 }
 
 void kernel_wrmsr(u32 c, u64 da){
