@@ -33,26 +33,20 @@ void __attribute__((section("._main"))) kernel_main() {
 	kernel_initAllocation();
 	
 	kernel_initACPI();
-
 	{
-		kernel_debugAllocator();
-		void* tempA = kernel_malloc(1, 1);
-		void* tempB = kernel_malloc(10, 8);
-		//kernel_debugAllocator();
-		//kernel_free(tempA);
+		void* fadt = kernel_findACPITable("FACP");
+	
+		if (fadt == NULL)
+			kernel_panic("Unable to find FACP");
 
-		kernel_printfBOCHS("TempA = %x, TempB = %x\n", (u32)tempA, (u32)tempB);
-		//kernel_debugAllocator();
-		
-		kernel_free(tempA);
-		kernel_debugAllocator();
-		kernel_free(tempB);
-		kernel_debugAllocator();
+		u32 dsdtAddr = (u32)(*(u64*)(fadt + 140));
 
-		kernel_mapAddress(0x20000, 0x20000, 0x02);
-		__asm__("xchg bx, bx");
-		kernel_unmapAddress(0x20000);
-		//kernel_debugAllocator();
+		if (dsdtAddr == 0)
+			dsdtAddr = *(u32*)(fadt + 40);
+
+		extern struct kernel_ACPINamespace kernel_rootNamespace;
+		kernel_printfBOCHS("dsdt: %x\n", dsdtAddr);
+		kernel_loadAML(&kernel_rootNamespace, (u32*)dsdtAddr);
 	}
 
 	while (1){}	

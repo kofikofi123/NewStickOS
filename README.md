@@ -17,3 +17,4 @@ After about 3 months, I feel I have made some good (slow, and unimportant) progr
 - ###### Become ACPI compliant 
 - ###### Add Interrupts
 - ###### Support both APIC and Legacy PIC
+- ###### Add code for GDT

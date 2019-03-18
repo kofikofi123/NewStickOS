@@ -51,7 +51,7 @@ struct kernel_BMM* kernel_lookupMemMapB(void* addr){
 	return NULL;
 }
 
-struct kernel_BMM* kernel_getEntry(u32 entry){
+struct kernel_BMM* kernel_getMemMapEntry(u32 entry){
 	if (entry >= _kernel_MemMapSize) return NULL;
 	return (_kernel_MemMap + entry);
 }
@@ -88,7 +88,7 @@ u32 kernel_getLargestAddr(){
 	return curAddr;
 }
 
-inline u32 kernel_getEntryLength(){
+inline u32 kernel_getMemMapEntryLength(){
 	return _kernel_MemMapSize;
 }
 

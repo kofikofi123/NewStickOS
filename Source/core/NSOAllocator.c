@@ -16,7 +16,7 @@ struct _kernel_AllocNode* end;
 static u8 _kernel_extendHEAP(u32);
 static struct _kernel_AllocNode* _kernel_allocatorFindSpace(u32, u8, u8*, u8*);
 static struct _kernel_AllocNode* _kernel_findNearestNode(struct _kernel_AllocNode*);
-//static struct _kernel_AllocNode* _kernel_combineNodes(struct _kernel_AllocNode*);
+static void _kernel_combineNodes(struct _kernel_AllocNode*);
 
 void kernel_initAllocation(){
 	struct _kernel_AllocNode* temp = NULL;
@@ -113,6 +113,9 @@ void kernel_free(void* ptr){
 
 	if (nextNode != NULL && nextNode != end)
 		nextNode->prev = newNode;
+
+	_kernel_combineNodes(prevNode);
+	//_kernel_combineNodes(prevNode);
 }
 
 void kernel_debugAllocator(){
@@ -188,6 +191,32 @@ static u8 _kernel_extendHEAP(u32 pages){
 	head.size = ((u32)end - 0xC0000000);
 
 	return 1;
+}
+
+static void _kernel_combineNodes(struct _kernel_AllocNode* prevNode){
+	if (prevNode == &head){
+		prevNode = prevNode->next;
+		if (prevNode == end) 
+			return;
+	}else if (prevNode == end)
+		return;
+
+	struct _kernel_AllocNode* node = prevNode->next;
+
+	if (node == end) return;
+
+	void* temp = (void*)node;
+	void* tempA = (void*)prevNode, *tempB = tempA + prevNode->size;
+
+	if (temp <= tempB){
+		struct _kernel_AllocNode* tempNext = node->next;
+		u32 tempSize = node->size;
+		prevNode->next = tempNext;
+		prevNode->size += tempSize;
+	}else
+		return;
+
+	return _kernel_combineNodes(prevNode);
 }
 
 /*static struct _kernel_AllocNode* _kernel_combineNodes(struct _kernel_AllocNode* node){

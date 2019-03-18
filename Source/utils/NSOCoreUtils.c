@@ -126,6 +126,15 @@ void kernel_memcpy(void* memA, const void* memB, u32 size){
 }
 
 s8 kernel_memcmp(const void* memA, const void* memB, u32 size){
+	char* a = (char*)memA, *b = (char*)memB, *c = a + size;
+
+	char tA = 0;
+	while (a != c){
+		tA = (*a++ - *b++);
+
+		if (tA != 0)
+			return tA;
+	}
 	return 0;
 }
 
@@ -141,4 +150,16 @@ u64 kernel_rdmsr(u32 c){
 					  : "=d" (hi), "=a"(lo)
 					  : "c" (c));
 	return ((u64)hi << 32) | (lo);
+}
+
+u8 kernel_calculateChecksum(void* buffer, u32 size){
+	u8 checksum = 0;
+
+	char* a = (char*)buffer;
+	char* c = a + size;
+
+	while (a != c)
+		checksum += *a++;
+
+	return checksum;
 }

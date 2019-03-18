@@ -32,6 +32,7 @@ u8 kernel_checkExtendedCpuid(u32);
 u8 kernel_isCpuidSupported();
 void kernel_wrmsr(u32, u64);
 u64 kernel_rdmsr(u32);
+u8 kernel_calculateChecksum(void*, u32);
 //unsafe Basis basic varadic impl
 
 #define kernel_va_start(va) \

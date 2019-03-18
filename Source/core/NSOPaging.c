@@ -104,7 +104,17 @@ void kernel_unmapAddress(u32 virtAddr){
 }
 
 void kernel_unmapIdentity(u32 from, u32 to){
-	//todo, too lazy
+	from = from & ~(0xFFF);
+	to = to & ~(0xFFF);
+	void(*unmappingFunction)(u32) = _kernel_unmapAddressN;
+	if (_kernel_isPagingEnabled()){
+		unmappingFunction = _kernel_unmapAddressR;
+	}
+
+	while (from <= to){
+		unmappingFunction(from);
+		from += 0x1000;
+	}	
 }
 
 //for now, I guess I will just take the performance hit

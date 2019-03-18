@@ -27,8 +27,8 @@ void kernel_initPageAllocator(){
 	u32 sizor = maximumPageN * sizeof(u32);
 	u32 i = 0;
 	
-	for (i = 0; i < kernel_getEntryLength(); i++){
-		struct kernel_BMM* bmm = kernel_getEntry(i);
+	for (i = 0; i < kernel_getMemMapEntryLength(); i++){
+		struct kernel_BMM* bmm = kernel_getMemMapEntry(i);
 		u32 base = (u32)bmm->base;
 		u32 end = base + ((u32)bmm->len - 1);
 
