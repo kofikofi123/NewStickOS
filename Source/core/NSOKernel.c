@@ -44,7 +44,7 @@ void __attribute__((section("._main"))) kernel_main() {
 		if (dsdtAddr == 0)
 			dsdtAddr = *(u32*)(fadt + 40);
 
-		extern struct kernel_ACPINamespace kernel_rootNamespace;
+		extern struct kernel_ACPIObject kernel_rootNamespace;
 		kernel_printfBOCHS("dsdt: %x\n", dsdtAddr);
 		kernel_loadAML(&kernel_rootNamespace, (u32*)dsdtAddr);
 	}

@@ -5,7 +5,7 @@
 #include "NSOBiosMaps.h"
 #include "NSOStringUtils.h"
 
-struct kernel_ACPINamespace kernel_rootNamespace;
+struct kernel_ACPIObject kernel_rootNamespace;
 static void* _kernel_rsdt = NULL;
 
 static void* _kernel_scanRSD(u32, u32);
@@ -44,6 +44,10 @@ u8 kernel_initACPI(){
 		return 0;
 
 	_kernel_rsdt = tempAddr;
+
+	kernel_rootNamespace.type = 0;
+	kernel_memcpy(kernel_rootNamespace.name, "\\", 2);
+
 
 	return 1;
 }

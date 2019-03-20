@@ -142,13 +142,13 @@ u8 kernel_mapIdentity(u32 from, u32 to, u8 flags){
 }
 
 //probably could integrate this somewhere else
-static u32* _kernel_getPageDir(u32 virtAddr){
+/*static u32* _kernel_getPageDir(u32 virtAddr){
 	u32 pId = (virtAddr >> 22);
 
 	u32 vaddr = 0xFFC00000 + (pId << 12);
 
 	return (u32*)vaddr;
-}
+}*/
 
 
 static inline u32* _kernel_getPageDirR(u32 virtAddr){

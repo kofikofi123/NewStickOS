@@ -31,16 +31,17 @@ struct kernel_ACPIHeader {
 	u32 creatorRevision;
 }__attribute__((packed)); //just to  be sure
 
-struct kernel_ACPIObject {
-	const char* name;
-};
 
-struct kernel_ACPINamespace {
-	const char* name;
+struct kernel_ACPIObject {
+	u32 type; //0 = namespace, 1 = ...
+	char* name;
+
+
+	struct kernel_ACPIObject** children;
 };
 
 u8 kernel_initACPI();
 void* kernel_findACPITable(const char*);
-u8 kernel_loadAML(struct kernel_ACPINamespace*, void*);
+u8 kernel_loadAML(struct kernel_ACPIObject*, void*);
 
 #endif

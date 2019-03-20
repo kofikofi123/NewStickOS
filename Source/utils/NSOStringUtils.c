@@ -29,6 +29,14 @@ u32 kernel_stringOccurance(const char* string, const char character){
 	return count;
 }
 
+u8 kernel_stringCompare(const char* sA, const char* sB){
+	u32 len = kernel_stringLength(sA);
+
+	if (len != kernel_stringLength(sB)) return 0;
+
+	return kernel_stringCompareRAW(sA, sB, len);
+}
+
 u8 kernel_stringCompareRAW(const char* sA, const char* sB, u32 raw){
 	char* a = (char*)sA;
 	char* b = (char*)sB;
