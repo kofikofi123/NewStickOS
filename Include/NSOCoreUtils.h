@@ -3,6 +3,8 @@
 
 #include "DataType.h"
 
+#define KERNEL_OSNAME "NewStickOS 3.0"
+
 //Output functions
 void kernel_outb(u16, u8);
 void kernel_outw(u16, u16);
