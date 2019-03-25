@@ -1,5 +1,5 @@
 CC := i686-elf-gcc
-CFLAGS := -Wall -masm=intel -std=c99 -I../../Include/
+CFLAGS := -masm=intel -std=c99 -I../../Include/
 
 CSOURCES := $(wildcard *.c)
 ASOURCES := $(wildcard *.asm)

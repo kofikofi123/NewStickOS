@@ -2,6 +2,7 @@
 #include "NSOAllocator.h"
 #include "NSOBochs.h"
 #include "NSOCoreUtils.h"
+#include "NSOStringUtils.h"
 
 //static void _kernel_resetBuffer(struct _kernel_StreamBuffer*, void*);
 
@@ -20,16 +21,20 @@ static u8 _kernel_checkBuffer8(struct _kernel_StreamBuffer*, u8, u32);
 static u8 _kernel_checkBuffer16(struct _kernel_StreamBuffer*, u16, u32);
 static u8 _kernel_checkBuffer32(struct _kernel_StreamBuffer*, u32, u32);
 static u8 _kernel_isBufferDone(struct _kernel_StreamBuffer*);
+////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////
+static struct kernel_ACPIScope* _kernel_createScope(const char*, u32);
+static void _kernel_createOperationRegion(struct _kernel_StreamBuffer*, struct kernel_ACPIScope*);
+static struct kernel_ACPIScope* _kernel_searchScope(struct kernel_ACPIScope*, const char*); 
+static void _kernel_appendToChildScope(struct kernel_ACPIScope*, struct kernel_ACPIScope*);
+static struct kernel_ACPIScope* _kernel_getLastScope(struct kernel_ACPIScope*);
+static u8 _kernel_isRootNamespace(struct kernel_ACPIScope*);
+static struct kernel_ACPIScope* _kernel_loadStringToObject(struct kernel_ACPIScope*, const char*);
+static struct kernel_ACPIScope* _kernel_loadIntegerToObject(struct kernel_ACPIScope*, u64);
+static void _kernel_debugACPIObject(struct kernel_ACPIScope*);
 
-static u8 _kernel_parseTermlist(struct _kernel_StreamBuffer*, struct kernel_ACPIObject*);
-static u8 _kernel_parseTerm(struct _kernel_StreamBuffer*, struct kernel_ACPIObject*);
-static void _kernel_createScopeObject(struct _kernel_StreamBuffer*, struct kernel_ACPIObject*);
-static u32 _kernel_extractPkgLength(struct _kernel_StreamBuffer*);
-static const char* _kernel_extractNamestring(struct _kernel_StreamBuffer*);
-
-
-
-u8 kernel_loadAML(struct kernel_ACPIObject* rootNamepace, void* aml){	
+///////////////////////////////////////////////////
+u8 kernel_loadAML(struct kernel_ACPIScope* rootNamespace, void* aml){	
 	struct kernel_ACPIHeader* header = (struct kernel_ACPIHeader*)aml;
 
 	if (kernel_calculateChecksum(header, header->length) != 0) return 0;
@@ -37,129 +42,141 @@ u8 kernel_loadAML(struct kernel_ACPIObject* rootNamepace, void* aml){
 	struct _kernel_StreamBuffer r_buffer = {.source = aml, .position = sizeof(struct kernel_ACPIHeader), .size = header->length};
 	struct _kernel_StreamBuffer* buffer = &r_buffer;
 
-	_kernel_parseTermlist(buffer, rootNamepace);
 
+	_kernel_parseTermList(rootNamespace, aml);
 	return 1;
 }
 
-static u8 _kernel_parseTermlist(struct _kernel_StreamBuffer* buffer, struct kernel_ACPIObject* namespace){
+void kernel_preloadACPIRoot(struct kernel_ACPIScope* rootNamespace){
+	_kernel_appendToChildScope(rootNamespace, _kernel_createScope("_GPE", 0));
+	_kernel_appendToChildScope(rootNamespace, _kernel_createScope("_PR_", 0));
+	_kernel_appendToChildScope(rootNamespace, _kernel_createScope("_SB_", 0));
+	_kernel_appendToChildScope(rootNamespace, _kernel_createScope("_SI_", 0));
+	_kernel_appendToChildScope(rootNamespace, _kernel_createScope("_TZ_", 0));
 
-	if (!_kernel_parseTerm(buffer, namespace)){
-		if (_kernel_isBufferDone(buffer)) return 1;
-	}
-	return 0;
+
+	_kernel_appendToChildScope(rootNamespace, _kernel_loadStringToObject(_kernel_createScope("_OS_", 0), "NewStickOS 3.0"));
 }
 
-static u8 _kernel_parseTerm(struct _kernel_StreamBuffer* buffer, struct kernel_ACPIObject* namespace){
-	u8 byte = _kernel_readBuffer8(buffer, 0);
-
-	if (byte == 0x10){
-		_kernel_createScopeObject(buffer, namespace);
-		return 1;
+static void kernel_parseTermList(struct kernel_ACPIScope* scope, struct _kernel_StreamBuffer* buffer){
+	while (!_kernel_isBufferDone(buffer)){
+		_kernel_parseTerm(scope, buffer);
 	}
-
-	return 0;
 }
 
-static void _kernel_createScopeObject(struct _kernel_StreamBuffer* buffer, struct kernel_ACPIObject* namespace){
-	_kernel_advanceBuffer(buffer, 1);
+static struct kernel_ACPIScope* _kernel_createScope(const char* name, u32 type){
+	struct kernel_ACPIScope* namespace = kernel_malloc(sizeof(struct kernel_ACPIScope), 4);
 
-	u32 length = _kernel_extractPkgLength(buffer);
-	u32 temp = buffer->size;
-	buffer->size = length;
-	/////////////////////////
-	const char* namestring = _kernel_extractNamestring(buffer);
-	kernel_printfBOCHS("Name: %s\n", namestring);
-
-	if (kernel_stringCompare(namestring, "\\")){
-		kernel_printfBOCHS("Is namespace root\n");
+	if (namespace != NULL){
+		kernel_memset(namespace, 0, sizeof(struct kernel_ACPIScope));
+		kernel_memcpy(namespace->name, name, 4);
+		namespace->type = type;
 	}
 
-	////////////////////////
-	buffer->size = temp;
-
+	return namespace;
 }
 
+static struct kernel_ACPIScope* _kernel_loadStringToObject(struct kernel_ACPIScope* scope, const char* string){
+	scope->type = KERNEL_AML_STRING;
+	scope->data.string = string;
+	return scope;
+}
+static struct kernel_ACPIScope* _kernel_loadIntegerToObject(struct kernel_ACPIScope* scope, u64 integer){
+	scope->type = KERNEL_AML_INTEGER;
+	scope->data.integer = integer;
+	return scope;
+}
 
-static const char* _kernel_extractNamestring(struct _kernel_StreamBuffer* buffer){
-	u32 sizeToAlloc = 1;
-	u32 numChars = 0;
+static struct kernel_ACPIScope* _kernel_searchScope(struct kernel_ACPIScope* namespace, const char* path){
+	char* tpath = (char*)path;
+	char* end = tpath + kernel_stringLength(tpath);
 
-	char prefix = 0;
+	struct kernel_ACPIScope* currentNamespace = namespace, *childNamepaces = NULL, *temp = NULL;
 
-	u32 numOfPrefix = 0;
-
-	if (_kernel_checkBuffer8(buffer, 0x5C, 0)){
-		sizeToAlloc++;
-		numOfPrefix++;
-		prefix = 0x5C;
-		_kernel_advanceBuffer(buffer, 1);
-	}else if (_kernel_checkBuffer8(buffer, 0x5E, 0)){
-		prefix = 0x5E;
-		sizeToAlloc++;
-		numOfPrefix++;
-		_kernel_advanceBuffer(buffer, 1);
-		while (_kernel_checkBuffer8(buffer, 0x5E, 0)){
-			sizeToAlloc++;
-			numOfPrefix++;
-			_kernel_advanceBuffer(buffer, 1);
+	if (*tpath == '\\'){
+		while (!_kernel_isRootNamespace(currentNamespace))
+			currentNamespace = currentNamespace->parentScope;
+		tpath++;
+	}else{
+		while (*tpath == '^'){
+			currentNamespace = currentNamespace->parentScope;
+			tpath++;
 		}
 	}
 
+	while (tpath != end){
+		
+		childNamepaces = currentNamespace->childScope;
+		temp = childNamepaces;
 
-	if (_kernel_checkBuffer8(buffer, 0x2E, 0)){
-		numChars += 10;
-		_kernel_advanceBuffer(buffer, 1);
-	}else if (_kernel_checkBuffer8(buffer, 0x2F, 0)){
-		_kernel_advanceBuffer(buffer, 1);
-		numChars += (_kernel_readBuffer8(buffer, 0) * 5);
-		_kernel_advanceBuffer(buffer, 1);
-	}
-
-	if (!_kernel_checkBuffer8(buffer, 0, 0)){
-		numChars += 4;
-	}
-
-	sizeToAlloc += numChars;
-
-	char* path = kernel_malloc(sizeToAlloc, 1);
-	char* tempPath = path;
-	kernel_memset(path, 0, sizeToAlloc);
-	kernel_memset(path, prefix, numOfPrefix);
-
-	u32 ftemp = 0;
-
-	if (numChars > 0){
-		for (u32 i = 0; i < numOfPrefix; i += 4, *tempPath++ = '.'){
-			ftemp = _kernel_readBuffer32(buffer, 0);
-			kernel_memcpy(tempPath, &ftemp, 4);
-			ftemp += 4;
+		while (temp != NULL){
+			if (kernel_stringCompareRAW(temp->name, tpath, 4)){
+				currentNamespace = temp;
+				tpath += 4;
+				break;
+			}
+			temp = temp->nextScope;
 		}
+
+		if (temp == NULL)
+			return NULL;
 	}
-	return path;
+	return currentNamespace;
+}
+
+void kernel_debugACPITree(struct kernel_ACPIScope* scope){
+	struct kernel_ACPIScope* temp = scope, *childTemp = scope->childScope;
+	char tempStr[5] = {0};
+	
+	kernel_memcpy(tempStr, scope->name, 4);
+	kernel_printfBOCHS("{\n\tName: %s\n\tType: %x\n\tValue: ", tempStr, temp->type);
+	_kernel_debugACPIObject(scope);
+	kernel_printStringBOCHS("\n}\n");
+	while (childTemp != NULL){
+		kernel_printfBOCHS("\nchild of \"%s\":\n", tempStr);
+		//kernel_printfBOCHS("child scope: %x\n", (u32)childTemp);
+		kernel_debugACPITree(childTemp);
+		childTemp = childTemp->nextScope;
+	}
 }
 
 
-static u32 _kernel_extractPkgLength(struct _kernel_StreamBuffer* buffer){
-	u32 length = 0;
-	u8 temp = _kernel_readBuffer8(buffer, 0);
-	u8 numBytes = (temp >> 6);
-	_kernel_advanceBuffer(buffer, 1);
+static void _kernel_appendToChildScope(struct kernel_ACPIScope* parent, struct kernel_ACPIScope* child){
+	child->parentScope = parent;
+	child->SDT = parent->SDT;
 
-	if (numBytes == 0)
-		length = temp & 0x3F;
-	else {
-		length = temp & 0x0F;
-		for (u8 i = 0; i < numBytes; i++){
-			length <<= 8;
-			length |= _kernel_readBuffer8(buffer, 0);
-			_kernel_advanceBuffer(buffer, 1);
-		}
+	if (parent->childScope == NULL)
+		parent->childScope = child;
+	else { 
+		struct kernel_ACPIScope* lastScope = _kernel_getLastScope(parent->childScope);
+		lastScope->nextScope = child;
 	}
+}
 
-	length -= (numBytes + 1);
+static void _kernel_debugACPIObject(struct kernel_ACPIScope* scope){
+	switch (scope->type){
+		case KERNEL_AML_STRING:
+			kernel_printStringBOCHS(scope->data.string);
+			break;
+		case KERNEL_AML_INTEGER:
+			kernel_printUNumberBOCHS(scope->data.integer);
+			break;
+		default:
+			break;
+	}
+}
 
-	return length;
+static struct kernel_ACPIScope* _kernel_getLastScope(struct kernel_ACPIScope* scope){
+	struct kernel_ACPIScope* temp = scope;
+
+	while (temp->nextScope != NULL)
+		temp = temp->nextScope;
+
+	return temp;
+}
+
+static inline u8 _kernel_isRootNamespace(struct kernel_ACPIScope* namespace){
+	return namespace->parentScope == NULL;
 }
 
 
@@ -195,3 +212,4 @@ static u8 _kernel_checkBuffer32(struct _kernel_StreamBuffer* buffer, u32 value, 
 static u8 _kernel_isBufferDone(struct _kernel_StreamBuffer* buffer){
 	return (buffer->size == 0);
 }
+

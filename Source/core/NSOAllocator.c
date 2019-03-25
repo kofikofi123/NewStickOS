@@ -2,6 +2,7 @@
 #include "NSOBiosMaps.h"
 #include "NSOBochs.h"
 #include "NSOCoreUtils.h"
+#include "NSOAllocator.h"
 
 struct _kernel_AllocNode {
 	u32 size;
@@ -75,6 +76,19 @@ void* kernel_malloc(u32 size, u8 alignment){
 	return final;
 }
 
+void* kernel_realloc(void* old, u32 newSize, u8 alignment){
+	if (old == NULL) return kernel_malloc(newSize, alignment);
+	if (newSize == 0) return NULL;
+
+	void* new = kernel_malloc(newSize, alignment);
+	if (new == NULL) return NULL;
+
+	kernel_memcpy(new, old, newSize);
+	kernel_free(old);
+	return new;
+}
+
+	
 void kernel_free(void* ptr){
 	if (ptr == NULL) return;
 

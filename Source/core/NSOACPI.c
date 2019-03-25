@@ -5,7 +5,8 @@
 #include "NSOBiosMaps.h"
 #include "NSOStringUtils.h"
 
-struct kernel_ACPIObject kernel_rootNamespace;
+struct kernel_ACPIScope kernel_rootNamespace;
+
 static void* _kernel_rsdt = NULL;
 
 static void* _kernel_scanRSD(u32, u32);
@@ -45,9 +46,10 @@ u8 kernel_initACPI(){
 
 	_kernel_rsdt = tempAddr;
 
-	kernel_rootNamespace.type = 0;
+	kernel_memset(&kernel_rootNamespace, 0, sizeof(struct kernel_ACPIScope));
 	kernel_memcpy(kernel_rootNamespace.name, "\\", 2);
-
+	kernel_rootNamespace.type = KERNEL_AML_UNINITALIZED;
+	kernel_preloadACPIRoot(&kernel_rootNamespace);
 
 	return 1;
 }
@@ -92,6 +94,25 @@ static void* _kernel_findACPITable32(const char* str){
 }
 
 static void* _kernel_findACPITable64(const char* str){
+	struct kernel_ACPIHeader* header = (struct kernel_ACPIHeader*)_kernel_rsdt;
+
+	u32 entries = (header->length - sizeof(struct kernel_ACPIHeader))/4;
+
+	u64* tempAddr = (u64*)(header + 1);
+
+	struct kernel_ACPIHeader* tempHeader = NULL;
+
+	while (entries-- > 0){
+		tempHeader = (struct kernel_ACPIHeader*)(tempAddr++);
+
+		if (kernel_stringCompareRAW(str, tempHeader->signature, 4)){
+			if (_kernel_checksumACPI(tempHeader, tempHeader->length))
+				return tempHeader;
+			else
+				return NULL;
+		}
+	}
+
 	return NULL;
 }
 
