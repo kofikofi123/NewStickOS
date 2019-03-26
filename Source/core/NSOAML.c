@@ -31,6 +31,8 @@ static u8 _kernel_isRootNamespace(struct kernel_ACPIScope*);
 static struct kernel_ACPIScope* _kernel_loadStringToObject(struct kernel_ACPIScope*, const char*);
 static struct kernel_ACPIScope* _kernel_loadIntegerToObject(struct kernel_ACPIScope*, u64);
 static void _kernel_debugACPIObject(struct kernel_ACPIScope*);
+static u32 _kernel_extractPkgLength(struct _kernel_StreamBuffer*);
+static char* _kernel_extractNamepath(struct _kernel_StreamBuffer*);
 //////////////////////////////////////////////
 static void _kernel_parseTermList(struct kernel_ACPIScope*, struct _kernel_StreamBuffer*);
 static void _kernel_parseTerm(struct kernel_ACPIScope*, struct _kernel_StreamBuffer*);
@@ -122,6 +124,44 @@ static void _kernel_parseScope(struct kernel_ACPIScope* scope, struct _kernel_St
 	_kernel_advanceBuffer(buffer, 1);
 	u32 length = _kernel_extractPkgLength(buffer);
 	
+	char* namepath = _kernel_extract
+	
+}
+
+static u32 _kernel_extractPkgLength(struct _kernel_StreamBuffer* buffer){
+	u32 length = 0;
+	u8 temp = _kernel_readBuffer8(buffer, 0);
+	u8 numBytes = (temp >> 6);
+	_kernel_advanceBuffer(buffer, 1);
+	if (numBytes == 0)
+		length = temp & 0x3F;
+	else {
+		length = temp & 0x0F;
+		for (u8 i = 0; i < numBytes; i++){
+			length <<= 8;
+			length |= _kernel_readBuffer8(buffer, 0);
+			_kernel_advanceBuffer(buffer, 1);
+		}
+	}
+	length -= (numBytes + 1);
+}
+
+static char* _kernel_extractNamepath(struct _kernel_StreamBuffer* buffer){
+	u32 savedPos = buffer->position;
+	if (_kernel_checkBuffer8(buffer, 0x5C))
+		_kernel_advanceBuffer(buffer, 1);
+	else if (_kernel_checkBuffer(buffer, 0x5E)){
+		_kernel_advanceBuffer(buffer, 1);
+		while (_kernel_checkBuffer(buffer, 0x5E))
+			_kernel_advanceBuffer(buffer, 1);
+	}
+	
+	if (_kernel_checkBuffer(buffer, 0x2E)){
+		_kernel_advanceBuffer(buffer, 9);
+	else if (_kernel_checkBuffer(buffer, 0x2F)){
+		_kernel_advanceBuffer(buffer, 1);
+		
+		
 }
 
 static struct kernel_ACPIScope* _kernel_createScope(const char* name){
