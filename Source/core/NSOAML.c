@@ -28,14 +28,17 @@ static void _kernel_createOperationRegion(struct _kernel_StreamBuffer*, struct k
 static void _kernel_appendToChildScope(struct kernel_ACPIScope*, struct kernel_ACPIScope*);
 static struct kernel_ACPIScope* _kernel_getLastScope(struct kernel_ACPIScope*);
 static u8 _kernel_isRootNamespace(struct kernel_ACPIScope*);
+
 static struct kernel_ACPIScope* _kernel_loadStringToObject(struct kernel_ACPIScope*, const char*);
 static struct kernel_ACPIScope* _kernel_loadIntegerToObject(struct kernel_ACPIScope*, u64);
+static struct kernel_ACPIScope* _kernel_loadAliasReferenceToObject(struct kernel_ACPIScope*, struct kernel_ACPIScope*);
 static void _kernel_debugACPIObject(struct kernel_ACPIScope*);
 static u32 _kernel_extractPkgLength(struct _kernel_StreamBuffer*);
 static char* _kernel_extractNamepath(struct _kernel_StreamBuffer*);
 //////////////////////////////////////////////
 static void _kernel_parseTermList(struct kernel_ACPIScope*, struct _kernel_StreamBuffer*);
 static void _kernel_parseTerm(struct kernel_ACPIScope*, struct _kernel_StreamBuffer*);
+static u8 _kernel_getObjectType(struct kernel_ACPIScope*);
 
 ///////////////////////////////////////////////////
 u8 kernel_loadAML(struct kernel_ACPIScope* rootNamespace, void* aml){	
@@ -112,7 +115,7 @@ static void _kernel_parseTerm(struct kernel_ACPIScope* scope, struct _kernel_Str
 
 	switch (starter){
 		case 0x10:
-			//_kernel_parseScope(scope, buffer);
+			_kernel_parseScope(scope, buffer);
 			break;
 		case 0x06:
 			//_kernel_parseAlias(scope, buffer);
@@ -124,8 +127,16 @@ static void _kernel_parseScope(struct kernel_ACPIScope* scope, struct _kernel_St
 	_kernel_advanceBuffer(buffer, 1);
 	u32 length = _kernel_extractPkgLength(buffer);
 	
-	char* namepath = _kernel_extract
+	char* namepath = _kernel_extractNamepath(buffer);
+		
+	struct kernel_ACPIScope* newScope = _kernel_searchScope(namepath);
 	
+	if (newScope == NULL){
+		char* name = _kernel_getNameFromPath(namepath);
+		newScope = _kernel_createScope(name);
+	}
+	
+	return _kernel_parseTermList(newScope, buffer);
 }
 
 static u32 _kernel_extractPkgLength(struct _kernel_StreamBuffer* buffer){
@@ -216,6 +227,14 @@ static void _kernel_appendToChildScope(struct kernel_ACPIScope* parent, struct k
 		struct kernel_ACPIScope* lastScope = _kernel_getLastScope(parent->childScope);
 		lastScope->nextScope = child;
 	}
+}
+		
+		
+static u8 _kernel_getObjectType(struct kernel_ACPIScope* scope){
+	u8 type = scope->type;
+	if (scope->isReference)
+		type = scope->data.reference->type;
+	return type;
 }
 
 static void _kernel_debugACPIObject(struct kernel_ACPIScope* scope){
