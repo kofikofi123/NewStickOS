@@ -124,11 +124,19 @@ static void _kernel_parseTerm(struct kernel_ACPIScope* scope, struct _kernel_Str
 	}
 }
 
+static void _kernel_parseAlias(struct kernel_ACPIScope* scope, struct _kernel_SteamBuffer* buffer){
+	_kernel_advanceBuffer(buffer, 1);
+	char* objpath = _kernel_extractNamestring(scope);
+	char* alias = _kernel_extractNamestring(scope);
+	
+	//_kernel_appendToChildScope(
+}
+
 static void _kernel_parseScope(struct kernel_ACPIScope* scope, struct _kernel_StreamBuffer* buffer){
 	_kernel_advanceBuffer(buffer, 1);
 	u32 length = _kernel_extractPkgLength(buffer);
 	
-	char* namepath = _kernel_extractNamepath(buffer);
+	char* namepath = _kernel_extractNamestring(buffer);
 		
 	struct kernel_ACPIScope* newScope = _kernel_searchScope(namepath);
 	
@@ -158,7 +166,7 @@ static u32 _kernel_extractPkgLength(struct _kernel_StreamBuffer* buffer){
 	length -= (numBytes + 1);
 }
 
-static char* _kernel_extractNamepath(struct _kernel_StreamBuffer* buffer){
+static char* _kernel_extractNamestring(struct _kernel_StreamBuffer* buffer){
 	u32 savedPos = buffer->position;
 	if (_kernel_checkBuffer8(buffer, 0x5C))
 		_kernel_advanceBuffer(buffer, 1);
