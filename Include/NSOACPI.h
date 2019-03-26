@@ -54,7 +54,7 @@ struct kernel_ACPIScope {
 	struct kernel_ACPIScope* nextScope;
 	struct kernel_ACPIScope* childScope;
 	struct kernel_ACPIHeader* SDT;
-
+	u8 isReference;
 	union {
 		u64 integer;
 		const char* string;
