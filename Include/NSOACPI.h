@@ -22,6 +22,8 @@
 #define KERNEL_AML_DDBHANDLE 15
 #define KERNEL_AML_DEBUGOBJECT 16
 
+#define KERNEL_AML_ALIASREF 17
+
 
 
 struct kernel_RSDP {
