@@ -57,7 +57,7 @@ struct kernel_ACPIScope {
 
 	union {
 		u64 integer;
-		const char* string8;
+		const char* string;
 	}data;
 };
 
@@ -66,4 +66,6 @@ void* kernel_findACPITable(const char*);
 u8 kernel_loadAML(struct kernel_ACPIScope*, void*);
 void kernel_debugACPITree(struct kernel_ACPIScope*);
 void kernel_preloadACPIRoot(struct kernel_ACPIScope*);
+u32 kernel_getACPIRevision();
+struct kernel_ACPIScope* kernel_searchScope(struct kernel_ACPIScope*, const char*); 
 #endif

@@ -23,15 +23,17 @@ static u8 _kernel_checkBuffer32(struct _kernel_StreamBuffer*, u32, u32);
 static u8 _kernel_isBufferDone(struct _kernel_StreamBuffer*);
 ////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////
-static struct kernel_ACPIScope* _kernel_createScope(const char*, u32);
+static struct kernel_ACPIScope* _kernel_createScope(const char*);
 static void _kernel_createOperationRegion(struct _kernel_StreamBuffer*, struct kernel_ACPIScope*);
-static struct kernel_ACPIScope* _kernel_searchScope(struct kernel_ACPIScope*, const char*); 
 static void _kernel_appendToChildScope(struct kernel_ACPIScope*, struct kernel_ACPIScope*);
 static struct kernel_ACPIScope* _kernel_getLastScope(struct kernel_ACPIScope*);
 static u8 _kernel_isRootNamespace(struct kernel_ACPIScope*);
 static struct kernel_ACPIScope* _kernel_loadStringToObject(struct kernel_ACPIScope*, const char*);
 static struct kernel_ACPIScope* _kernel_loadIntegerToObject(struct kernel_ACPIScope*, u64);
 static void _kernel_debugACPIObject(struct kernel_ACPIScope*);
+//////////////////////////////////////////////
+static void _kernel_parseTermList(struct kernel_ACPIScope*, struct _kernel_StreamBuffer*);
+static void _kernel_parseTerm(struct kernel_ACPIScope*, struct _kernel_StreamBuffer*);
 
 ///////////////////////////////////////////////////
 u8 kernel_loadAML(struct kernel_ACPIScope* rootNamespace, void* aml){	
@@ -42,52 +44,25 @@ u8 kernel_loadAML(struct kernel_ACPIScope* rootNamespace, void* aml){
 	struct _kernel_StreamBuffer r_buffer = {.source = aml, .position = sizeof(struct kernel_ACPIHeader), .size = header->length};
 	struct _kernel_StreamBuffer* buffer = &r_buffer;
 
-
 	_kernel_parseTermList(rootNamespace, aml);
 	return 1;
 }
 
 void kernel_preloadACPIRoot(struct kernel_ACPIScope* rootNamespace){
-	_kernel_appendToChildScope(rootNamespace, _kernel_createScope("_GPE", 0));
-	_kernel_appendToChildScope(rootNamespace, _kernel_createScope("_PR_", 0));
-	_kernel_appendToChildScope(rootNamespace, _kernel_createScope("_SB_", 0));
-	_kernel_appendToChildScope(rootNamespace, _kernel_createScope("_SI_", 0));
-	_kernel_appendToChildScope(rootNamespace, _kernel_createScope("_TZ_", 0));
+	_kernel_appendToChildScope(rootNamespace, _kernel_createScope("_GPE"));
+	_kernel_appendToChildScope(rootNamespace, _kernel_createScope("_PR_"));
+	_kernel_appendToChildScope(rootNamespace, _kernel_createScope("_SB_"));
+	_kernel_appendToChildScope(rootNamespace, _kernel_createScope("_SI_"));
+	_kernel_appendToChildScope(rootNamespace, _kernel_createScope("_TZ_"));
 
+	//predefined objects
+	_kernel_appendToChildScope(rootNamespace, _kernel_loadStringToObject(_kernel_createScope("_OS_"), KERNEL_OSNAME));
+	_kernel_appendToChildScope(rootNamespace, _kernel_loadIntegerToObject(_kernel_createScope("_REV"), kernel_getACPIRevision()));
 
-	_kernel_appendToChildScope(rootNamespace, _kernel_loadStringToObject(_kernel_createScope("_OS_", 0), "NewStickOS 3.0"));
 }
 
-static void kernel_parseTermList(struct kernel_ACPIScope* scope, struct _kernel_StreamBuffer* buffer){
-	while (!_kernel_isBufferDone(buffer)){
-		_kernel_parseTerm(scope, buffer);
-	}
-}
-
-static struct kernel_ACPIScope* _kernel_createScope(const char* name, u32 type){
-	struct kernel_ACPIScope* namespace = kernel_malloc(sizeof(struct kernel_ACPIScope), 4);
-
-	if (namespace != NULL){
-		kernel_memset(namespace, 0, sizeof(struct kernel_ACPIScope));
-		kernel_memcpy(namespace->name, name, 4);
-		namespace->type = type;
-	}
-
-	return namespace;
-}
-
-static struct kernel_ACPIScope* _kernel_loadStringToObject(struct kernel_ACPIScope* scope, const char* string){
-	scope->type = KERNEL_AML_STRING;
-	scope->data.string = string;
-	return scope;
-}
-static struct kernel_ACPIScope* _kernel_loadIntegerToObject(struct kernel_ACPIScope* scope, u64 integer){
-	scope->type = KERNEL_AML_INTEGER;
-	scope->data.integer = integer;
-	return scope;
-}
-
-static struct kernel_ACPIScope* _kernel_searchScope(struct kernel_ACPIScope* namespace, const char* path){
+struct kernel_ACPIScope* kernel_searchScope(struct kernel_ACPIScope* namespace, const char* path){
+	if (namespace == NULL) return NULL;
 	char* tpath = (char*)path;
 	char* end = tpath + kernel_stringLength(tpath);
 
@@ -124,6 +99,50 @@ static struct kernel_ACPIScope* _kernel_searchScope(struct kernel_ACPIScope* nam
 	return currentNamespace;
 }
 
+static void _kernel_parseTermList(struct kernel_ACPIScope* scope, struct _kernel_StreamBuffer* buffer){
+	while (!_kernel_isBufferDone(buffer)){
+		_kernel_parseTerm(scope, buffer);
+	}
+}
+
+static void _kernel_parseTerm(struct kernel_ACPIScope* scope, struct _kernel_StreamBuffer* buffer){
+	u8 starter = _kernel_readBuffer8(buffer, 0);
+
+	switch (starter){
+		case 0x10:
+			//_kernel_parseScope(scope, buffer);
+			break;
+		case 0x06:
+			//_kernel_parseAlias(scope, buffer);
+			break;
+	}
+}
+
+static struct kernel_ACPIScope* _kernel_createScope(const char* name){
+	struct kernel_ACPIScope* namespace = kernel_malloc(sizeof(struct kernel_ACPIScope), 4);
+
+	if (namespace != NULL){
+		kernel_memset(namespace, 0, sizeof(struct kernel_ACPIScope));
+		kernel_memcpy(namespace->name, name, 4);
+		namespace->type = KERNEL_AML_UNINITALIZED;
+	}
+
+	return namespace;
+}
+
+static struct kernel_ACPIScope* _kernel_loadStringToObject(struct kernel_ACPIScope* scope, const char* string){
+	scope->type = KERNEL_AML_STRING;
+	scope->data.string = string;
+	return scope;
+}
+static struct kernel_ACPIScope* _kernel_loadIntegerToObject(struct kernel_ACPIScope* scope, u64 integer){
+	scope->type = KERNEL_AML_INTEGER;
+	scope->data.integer = integer;
+	return scope;
+}
+
+
+
 void kernel_debugACPITree(struct kernel_ACPIScope* scope){
 	struct kernel_ACPIScope* temp = scope, *childTemp = scope->childScope;
 	char tempStr[5] = {0};
@@ -159,7 +178,7 @@ static void _kernel_debugACPIObject(struct kernel_ACPIScope* scope){
 			kernel_printStringBOCHS(scope->data.string);
 			break;
 		case KERNEL_AML_INTEGER:
-			kernel_printUNumberBOCHS(scope->data.integer);
+			kernel_printUNumberBOCHS((u32)scope->data.integer);
 			break;
 		default:
 			break;

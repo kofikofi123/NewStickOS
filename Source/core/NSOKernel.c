@@ -46,8 +46,9 @@ void __attribute__((section("._main"))) kernel_main() {
 
 		extern struct kernel_ACPIScope kernel_rootNamespace;
 		kernel_rootNamespace.SDT = (struct kernel_ACPIHeader*)dsdtAddr;
-		kernel_loadAML(&kernel_rootNamespace, (u32*)dsdtAddr);
-		kernel_debugACPITree(&kernel_rootNamespace);
+		//kernel_loadAML(&kernel_rootNamespace, (u32*)dsdtAddr);
+		//kernel_debugACPITree(&kernel_rootNamespace);
+		kernel_debugACPITree(kernel_searchScope(&kernel_rootNamespace, "\\_REV"));
 	}
 
 	while (1){}	

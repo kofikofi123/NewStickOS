@@ -54,6 +54,10 @@ u8 kernel_initACPI(){
 	return 1;
 }
 
+u32 kernel_getACPIRevision(){
+	return ((struct kernel_ACPIHeader*)_kernel_rsdt)->revision;
+}
+
 void* kernel_findACPITable(const char* str){
 	if (_kernel_rsdt == NULL) return NULL;
 
