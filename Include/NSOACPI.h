@@ -58,6 +58,7 @@ struct kernel_ACPIScope {
 	union {
 		u64 integer;
 		const char* string;
+		struct kernel_ACPIScope* reference;
 	}data;
 };
 
