@@ -32,6 +32,7 @@ static u8 _kernel_isRootNamespace(struct kernel_ACPIScope*);
 static struct kernel_ACPIScope* _kernel_loadStringToObject(struct kernel_ACPIScope*, const char*);
 static struct kernel_ACPIScope* _kernel_loadIntegerToObject(struct kernel_ACPIScope*, u64);
 static struct kernel_ACPIScope* _kernel_loadAliasReferenceToObject(struct kernel_ACPIScope*, struct kernel_ACPIScope*);
+
 static void _kernel_debugACPIObject(struct kernel_ACPIScope*);
 static u32 _kernel_extractPkgLength(struct _kernel_StreamBuffer*);
 static char* _kernel_extractNamepath(struct _kernel_StreamBuffer*);
@@ -231,9 +232,12 @@ static void _kernel_appendToChildScope(struct kernel_ACPIScope* parent, struct k
 		
 		
 static u8 _kernel_getObjectType(struct kernel_ACPIScope* scope){
-	u8 type = scope->type;
-	if (scope->isReference)
-		type = scope->data.reference->type;
+	u8 type = KERNEL_AML_UNINITALIZE;
+	
+	switch (scope->type){
+		
+	}
+	
 	return type;
 }
 
