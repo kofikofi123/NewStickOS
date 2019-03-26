@@ -118,6 +118,12 @@ static void _kernel_parseTerm(struct kernel_ACPIScope* scope, struct _kernel_Str
 	}
 }
 
+static void _kernel_parseScope(struct kernel_ACPIScope* scope, struct _kernel_StreamBuffer* buffer){
+	_kernel_advanceBuffer(buffer, 1);
+	u32 length = _kernel_extractPkgLength(buffer);
+	
+}
+
 static struct kernel_ACPIScope* _kernel_createScope(const char* name){
 	struct kernel_ACPIScope* namespace = kernel_malloc(sizeof(struct kernel_ACPIScope), 4);
 
