@@ -60,7 +60,12 @@ struct kernel_ACPIScope {
 	union {
 		u64 integer;
 		const char* string;
-		struct kernel_ACPIScope* reference;
+		struct {
+			u8 regionType;
+			u64 regionOffset;
+			u64 regionLength;
+		}operationRegion;
+		struct kernel_ACPIScope* aliasReference;
 	}data;
 };
 
