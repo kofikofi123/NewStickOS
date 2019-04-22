@@ -9,7 +9,8 @@ New year modification, nothing has been tested, just compiled
 # NewStickOS 3.0 (March 2019)
 After about 3 months, I feel I have made some good (slow, and unimportant) progress.
 
-
+# NewStickOS 3.0 (April 2019)
+Decided to use acpica. Remodeled my make system. OS compiles on new compiler (i686-nos)
 
 # NewStickOS TODOS:
 #### TODO before June (Not in order) (Could be shifted into other deadlnes):
