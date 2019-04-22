@@ -1,0 +1,164 @@
+#include "NSOACPI.h"
+#include "NSOPaging.h"
+#include "NSOAllocator.h"
+#include "NSOLocks.h"
+#include "NSOBochs.h"
+
+
+ACPI_STATUS AcpiOsInitalize(){
+	kernel_printStringBOCHS("Initalizing ACPICA\n");
+	return AE_OK;
+}
+
+ACPI_STATUS AcpiOsTerminate(){
+	kernel_printStringBOCHS("Terminating ACPICA\n");
+	return AE_OK;
+}
+
+ACPI_PHYSICAL_ADDRESS AcpiOsGetRootPointer(){
+	ACPI_PHYSICAL_ADDRESS addr = 0;
+	AcpiFindRootPointer(&addr);
+	return addr;
+}
+
+ACPI_STATUS AcpiOsPredefineOverride(const ACPI_PREDEFINED_NAMES* predefinedObject, ACPI_STRING* NewValue){
+	return AE_OK;
+}
+
+ACPI_STATUS AcpiOsTableOverride(ACPI_TABLE_HEADER* existingTable, ACPI_TABLE_HEADER** NewTable){
+	return AE_OK;
+}
+
+ACPI_STATUS AcpiOsPhysicalTableOverride(ACPI_TABLE_HEADER* existingTable, ACPI_PHYSICAL_ADDRESS* newAddress, UINT32* newTableLength){
+	return AE_OK;
+}
+/////////////////////////////////////////////////////////////////////////////////////
+ACPI_STATUS AcpiOsCreateCache(char* cacheName, UINT16 objectSize, UINT16 maxDepth, ACPI_CACHE_T **returnCache){
+	return AE_OK;
+}
+
+ACPI_STATUS AcpiOsDeleteCache(ACPI_CACHE_T* cache){
+	return AE_OK;
+}
+
+ACPI_STATUS AcpiOsPurgeCache(ACPI_CACHE_T* cache){
+	return AE_OK;
+}
+
+void* AcpiOsAquireObject(ACPI_CACHE_T *cache){
+	return NULL;
+}
+
+ACPI_STATUS AcpiOsReleaseObject(ACPI_CACHE_T* Cache, void* object){
+	return AE_OK;
+}
+
+void* AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS PhysAddr, ACPI_SIZE Length){
+	ACPI_SIZE len = ((Length + 0x1000) & ~(0xFFF));
+
+	kernel_mapIdentity((u32)PhysAddr, (u32)(PhysAddr + len), 0x02);
+
+	return ACPI_TO_POINTER(PhysAddr);
+}
+
+void AcpiOsUnmapMemory(void* vaddr, ACPI_SIZE Length){
+	ACPI_SIZE len = ((Length + 0x1000) & ~(0xFFF));
+
+	kernel_unmapIdentity((u32)vaddr, (u32)(vaddr + len));
+}
+
+ACPI_STATUS AcpiOsGetPhysicalAddress(void* logicalAddres, ACPI_PHYSICAL_ADDRESS* physicalAddress){
+	return AE_ERROR;
+}
+
+void* AcpiOsAllocate(ACPI_SIZE size){
+	return kernel_malloc(size, 1);
+}
+
+void AcpiOsFree(void* memory){
+	return kernel_free(memory);
+}
+
+BOOLEAN AcpiOsReadable(void* Memory, ACPI_SIZE Length){
+	return TRUE;
+}
+
+BOOLEAN AcpiOsWriteable(void* Memory, ACPI_SIZE Length){
+	return TRUE;
+}
+
+///////////////////////////////////////////////////////////////////////
+
+ACPI_THREAD_ID AcpiOsGetThreadId(){
+	return 0;
+}
+
+ACPI_STATUS AcpiOsExecute(ACPI_EXECUTE_TYPE type, ACPI_OSD_EXEC_CALLBACK function, void* context){
+	return AE_OK;
+}
+
+void AcpiOsSleep(UINT64 milliseconds){}
+
+void AcpiOsStall(UINT32 microseconds){}
+
+void AcpiOsWaitEventsComplete(){}
+
+////////////////////////////////////////////////////////////////////////
+
+ACPI_STATUS AcpiOsCreateMutex(ACPI_MUTEX* outHandle){
+
+}
+
+void AcpiOsDeleteMutex(ACPI_MUTEX Handle){}
+
+ACPI_STATUS AcpiOsAcquireMutex(ACPI_MUTEX handle, UINT16 timeout){
+	return AE_OK;
+}
+
+void AcpiOsReleaseMutex(ACPI_MUTEX handle){}
+
+ACPI_STATUS AcpiOsCreateSemaphore(UINT32 maxUnits, UINT32 initalUnits, ACPI_SEMAPHORE* outHandle){
+	return AE_OK;
+}
+
+ACPI_STATUS AcpiOsDeleteSemaphore(ACPI_SEMAPHORE handle){}
+
+ACPI_STATUS AcpiOsWaitSemaphore(ACPI_SEMAPHORE handle, UINT23 units, UINT16 timeout){
+	return AE_OK;
+}
+
+ACPI_STATUS AcpiOsSignalSemaphore(ACPI_SEMAPHORE handle, UINT32 units){
+	return AE_OK;
+}
+
+ACPI_STATUS AcpiOsCreateLock(ACPI_SPINLOCK* outHandle){
+	if (outHandle == NULL) return AE_BAD_PARAMETER;
+
+	ACPI_SPINLOCK lock = kernel_createSpinlock();
+
+	if (lock == NULL)
+		return AE_NO_MEMORY;
+
+	*outHandle = lock;
+	return AE_OK;
+}
+
+void AcpiOsDeleteLock(ACPI_HANDLE handle){
+	kernel_free(handle);
+}
+
+
+ACPI_CPU_FLAGS AcpiOsAquireLock(ACPI_SPINLOCK Handle){
+	
+	return AE_OK;
+}
+
+void AcpiOsReleaseLock(ACPI_SPINLOCK handle, ACPI_CPU_FLAGS flags){
+
+}
+
+///////////////////////////////////////////////////////////////
+
+ACPI_STATuS AcpiOsInstallInterruptHandler(UINT32 interruptLevel, ACPI_OSD_HANDLER handler, void* context){
+	
+}

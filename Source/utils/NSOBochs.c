@@ -2,8 +2,8 @@
 #include "NSOCoreUtils.h"
 #include "NSOStringUtils.h"
 
-static u8 __attribute__((cdecl)) _kernel_bochs_debug_enabled();
-static u32 __attribute__((cdecl)) _kernel_bochs_find_base(const u32);
+static u8 _kernel_bochs_debug_enabled();
+static u32  _kernel_bochs_find_base(const u32);
 
 /*
  * Function: kernel_printCharBOCHS

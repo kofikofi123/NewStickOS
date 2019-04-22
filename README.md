@@ -8,6 +8,10 @@ New year modification, nothing has been tested, just compiled
 
 # NewStickOS 3.0 (March 2019)
 After about 3 months, I feel I have made some good (slow, and unimportant) progress.
+
+
+
+# NewStickOS TODOS:
 #### TODO before June (Not in order) (Could be shifted into other deadlnes):
 - ###### Add 1 MB page allocaton and paging support (support for 3-level paging, etc.)
 - ###### ~~Add a basic page allocator~~

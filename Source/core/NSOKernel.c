@@ -8,6 +8,7 @@
 #include "NSOPaging.h"
 #include "NSOACPI.h"
 #include "NSOCacheControl.h"
+#include "NSOLocks.h"
 
 extern u32 kernel_end;
 void __attribute__((section("._main"))) kernel_main() {
@@ -31,25 +32,15 @@ void __attribute__((section("._main"))) kernel_main() {
 	
 	//init kernel heaap
 	kernel_initAllocation();
+	kernel_printfBOCHS("Is it hanging!\n");
+	/*
+	kernel_omniLock lock = kernel_createLock();
+
+	kernel_printfBOCHS("Test: %b\n", kernel_testSpinlock(lock));
+	kernel_acquireSpinlock(lock);
+	kernel_printfBOCHS("Test: %b\n", kernel_testSpinlock(lock));
+	kernel_releaseLock(lock);
+	kernel_printfBOCHS("Test: %b\n", kernel_testSpinlock(lock));*/
 	
-	kernel_initACPI();
-	{
-		void* fadt = kernel_findACPITable("FACP");
-	
-		if (fadt == NULL)
-			kernel_panic("Unable to find FACP");
-
-		u32 dsdtAddr = (u32)(*(u64*)(fadt + 140));
-
-		if (dsdtAddr == 0)
-			dsdtAddr = *(u32*)(fadt + 40);
-
-		extern struct kernel_ACPIScope kernel_rootNamespace;
-		kernel_rootNamespace.SDT = (struct kernel_ACPIHeader*)dsdtAddr;
-		kernel_loadAML(&kernel_rootNamespace, (u32*)dsdtAddr);
-		//kernel_debugACPITree(&kernel_rootNamespace);
-		//kernel_debugACPITree(kernel_searchScope(&kernel_rootNamespace, "\\_REV"));
-	}
-
 	while (1){}	
 }

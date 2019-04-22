@@ -2,6 +2,7 @@
 #define _DATATYPE_H
 
 #define NULL (void*)0
+#define IS_NULL(x) (x = NULL)
 
 typedef unsigned char u8;
 typedef signed char s8;

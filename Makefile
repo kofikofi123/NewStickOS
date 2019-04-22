@@ -1,12 +1,42 @@
+CC := i686-nos-gcc
+LD := i686-nos-ld
+NASM := nasm
+GII := genisoimage
+CFLAGS := -masm=intel -ffreestanding -m32 --std=c99 -IInclude -IInclude/acpica
+BUILD := ./Build
 
+DIRS := ./Source/core ./Source/devices ./Source/utils 
+#		./Source/acpica ./Source/acpica/debugger ./Source/acpica/disassembler  \
+		./Source/acpica/dispatcher ./Source/acpica/events ./Source/acpica/executer  \
+		./Source/acpica/hardware ./Source/acpica/namespace ./Source/acpica/parser  \
+		./Source/acpica/resources ./Source/acpica/tables ./Source/acpica/utilities
 
-compileSources:
-	@make -C Source --no-print-directory
-	@genisoimage -V 'MYOS' -no-emul-boot -boot-load-size 4 -b Bootloader.bin -o StickOS.iso DiskContent
-	@echo "[Finished]"
+BOOTDIR := ./Source/boot
 
-.PHONY: clean
-clean:
-	@rm -f DiskContent/*.bin
-	@rm -f Build/*.o
-	@rm -f StickOS.iso
+VPATH = ./Source/boot:./Source/core:./Source/devices:./Source/utils
+#		./Source/acpica ./Source/acpica/debugger:./Source/acpica/disassembler: \
+		./Source/acpica/dispatcher:./Source/acpica/events:./Source/acpica/executer: \
+		./Source/acpica/hardware:./Source/acpica/namespace:./Source/acpica/parser: \
+		./Source/acpica/resources:./Source/acpica/tables:./Source/acpica/utilities
+
+CSOURCES :=  $(wildcard $(addsuffix /*.c,$(DIRS)))
+ASOURCES := $(wildcard $(addsuffix /*.asm,$(DIRS)))
+BSOURCES := $(wildcard $(addsuffix /*.asm,$(BOOTDIR)))
+OBJECTS := $(CSOURCES:.c=.o)
+OBJECTS += $(ASOURCES:.asm=.o)
+EXTRA_OBJECTS := $(OBJECTS) $(BSOURCES:.asm=.bin)
+
+build: all
+	@$(LD) -T KernelLinkerScript.ld $(OBJECTS)
+	@$(sudo) cp $(BOOTDIR)/*.bin ./DiskContent
+	@$(GII) -V 'MYOS' -no-emul-boot -boot-load-size 4 -b Bootloader.bin -o StickOS.iso DiskContent
+
+.PHONY: all clean
+
+all: $(EXTRA_OBJECTS)
+clean: 
+	@rm -rf $(OBJECTS)
+
+%.o: %.c ; @$(CC) $(CFLAGS) -o $@ -c $<
+%.o: %.asm ; $(NASM) -f elf32 $< -o $@
+%.bin: %.asm ; $(NASM) -f bin $< -o $@
