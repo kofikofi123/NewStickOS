@@ -19,7 +19,7 @@ u8 __attribute__((cdecl)) kernel_printCharBOCHS(const char character){
 	if (!_kernel_bochs_debug_enabled())
 		return 0;
 
-	kernel_outb(0xE9, character);
+	kernel_out8(0xE9, character);
 
 	return 1;
 }
@@ -43,7 +43,7 @@ u8 __attribute__((cdecl)) kernel_printStringBOCHS(const char* string){
 	char *sA = (char*)string, *sB = sA + (length);
 
 
-	while (sA != sB) kernel_outb(0xE9, *sA++);
+	while (sA != sB) kernel_out8(0xE9, *sA++);
 
 	return 1;
 }
@@ -66,10 +66,10 @@ u8 __attribute__((cdecl)) kernel_printUNumberBOCHS(const u32 number){
 	u32 temp = number;
 
 	if (number == 0)
-		kernel_outb(0xE9, 0x30);
+		kernel_out8(0xE9, 0x30);
 	else {
 		while (base != 0){
-			kernel_outb(0xE9, (temp / base) | 0x30);
+			kernel_out8(0xE9, (temp / base) | 0x30);
 			temp = temp % base;
 			base = base / 10;
 		}
@@ -102,17 +102,17 @@ u8 __attribute__((cdecl)) kernel_printHexBOCHS(const u32 number){
 			nibble = (temp & mask) >> shifts;
 			if ((nibble > 0 && nibble < 10) || (nibble == 0 && zero_spam == 1)){
 				zero_spam = 1;
-				kernel_outb(0xE9, nibble | 0x30);
+				kernel_out8(0xE9, nibble | 0x30);
 			}
 			else if (nibble >= 10){
 				zero_spam = 1;
-				kernel_outb(0xE9, 0x61 + (nibble - 0x0A));
+				kernel_out8(0xE9, 0x61 + (nibble - 0x0A));
 			}
 			mask = mask >> 4;
 			shifts -= 4;
 		}
 	}else
-		kernel_outb(0xE9, 0x30);
+		kernel_out8(0xE9, 0x30);
 
 	return 1;
 }
@@ -183,6 +183,10 @@ u8 __attribute__((cdecl)) kernel_printfBOCHS(const char* string, ...){
 	return 1;
 }
 
+inline void kernel_breakBOCHS(){
+	__asm__("xchg bx, bx");
+}
+
 
 
 /*
@@ -195,7 +199,7 @@ u8 __attribute__((cdecl)) kernel_printfBOCHS(const char* string, ...){
  */
 static u8 __attribute__((cdecl)) _kernel_bochs_debug_enabled(){
 	u8 result = 0;
-	if (kernel_inb(0xE9) == 0xE9) result = 1;
+	if (kernel_in8(0xE9) == 0xE9) result = 1;
 	return result;
 }
 

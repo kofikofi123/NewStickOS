@@ -6,6 +6,7 @@
 void kernel_initAllocation();
 
 void* kernel_malloc(u32, u8);
+void* kernel_calloc(u32, u8);
 void* kernel_realloc(void*, u32, u8);
 void kernel_free(void*);
 

@@ -6,14 +6,14 @@
 #define KERNEL_OSNAME "NewStickOS 3.0"
 
 //Output functions
-void kernel_outb(u16, u8);
-void kernel_outw(u16, u16);
-void kernel_outdw(u16, u32);
+void kernel_out8(u16, u8);
+void kernel_out16(u16, u16);
+void kernel_out32(u16, u32);
 
 //Input functions
-u8 kernel_inb(u16);
-u16 kernel_inw(u16);
-u32 kernel_indw(u16);
+u8 kernel_in8(u16);
+u16 kernel_in16(u16);
+u32 kernel_in32(u16);
 
 //Flag manip functions
 void kernel_sti();
@@ -38,7 +38,7 @@ u8 kernel_calculateChecksum(void*, u32);
 //unsafe Basis basic varadic impl
 
 #define kernel_va_start(va) \
-	__asm volatile("lea eax, [ebp + 12]\n\tmov %0, eax" \
+	__asm__ volatile("lea eax, [ebp + 12]\n\tmov %0, eax" \
 			: "=r" (va) \
 			: \
 			: "eax");

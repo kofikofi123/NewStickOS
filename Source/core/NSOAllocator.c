@@ -76,6 +76,15 @@ void* kernel_malloc(u32 size, u8 alignment){
 	return final;
 }
 
+void* kernel_calloc(u32 size, u8 alignment){
+	void* ptr = kernel_malloc(size, alignment);
+
+	if (ptr != NULL)
+		kernel_memset(ptr, 0, size);
+
+	return ptr;
+}
+
 void* kernel_realloc(void* old, u32 newSize, u8 alignment){
 	if (old == NULL) return kernel_malloc(newSize, alignment);
 	if (newSize == 0) return NULL;

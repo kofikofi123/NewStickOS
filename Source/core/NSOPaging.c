@@ -36,11 +36,12 @@ void kernel_initPaging(){
 	_kernel_loadPageDirectory(0, pt32, 0x02);
 	_kernel_loadPageDirectory(1023, pd32, 0x02);
 
-
 	kernel_mapAddress(pd32, pd32, 0x02);
 	kernel_mapAddress(pt32, pt32, 0x02);
 
+	kernel_breakBOCHS();
 	kernel_loadPageDirectory(_kernel_local_pageDirectory);
+
 }
 
 u8 kernel_mapAddress(u32 virtAddr, u32 physAddr, u8 flags){

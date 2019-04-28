@@ -1,6 +1,8 @@
 #ifndef __ACNOS_H__
 #define __ACNOS_H__
 
+#include "DataType.h"
+
 #define COMPILER_DEPENDENT_INT64 s64 //signed long long int
 #define COMPILER_DEPENDENT_UINT64 u64 //unsigned long long int
 
@@ -26,9 +28,25 @@
 
 
 #define ACPI_MACHINE_WIDTH 32
+#define ACPI_32BIT_PHYSICAL_ADDRESS
+#define ACPI_MUTEX_TYPE ACPI_OSL_MUTEX
 
-#define ACPI_DISASSEMBLER
-#define ACPI_DEBUGGER
-#define ACPI_DEBUG_OUTPUT
+#undef ACPI_DISASSEMBLER // 0
+#define ACPI_DEBUGGER 1 // 0 
+//#define ACPI_DEBUG_OUTPUT 1 // 0
+#define ACPI_CACHE_T                ACPI_MEMORY_LIST
+#define ACPI_USE_LOCAL_CACHE
+
+/*
+#define ACPI_USE_ALTERNATE_PROTOTYPE_AcpiOsEnterSleep
+#define ACPI_USE_ALTERNATE_PROTOTYPE_AcpiOsSignal
+#define ACPI_USE_ALTERNATE_PROTOTYPE_AcpiOsGetTimer
+#define ACPI_USE_ALTERNATE_PROTOTYPE_AcpiOsGetLine
+#define ACPI_USE_ALTERNATE_PROTOTYPE_AcpiOsInitializeDebugger
+#define ACPI_USE_ALTERNATE_PROTOTYPE_AcpiOsTerminateDebugger
+#define ACPI_USE_ALTERNATE_PROTOTYPE_AcpiOsWaitCommandReady
+#define ACPI_USE_ALTERNATE_PROTOTYPE_AcpiOsTracePoint
+#define ACPI_USE_ALTERNATE_PROTOTYPE_AcpiOsVprintf
+*/
 
 #endif

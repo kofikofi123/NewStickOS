@@ -2,5 +2,5 @@
 #include "NSOAllocator.h"
 
 inline kernel_omniLock kernel_createLock(){
-	return kernel_malloc(sizeof(u32), 4);
+	return kernel_calloc(sizeof(u32), 4);
 }

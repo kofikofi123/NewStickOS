@@ -2,22 +2,22 @@ CC := i686-nos-gcc
 LD := i686-nos-ld
 NASM := nasm
 GII := genisoimage
-CFLAGS := -masm=intel -ffreestanding -m32 --std=c99 -IInclude -IInclude/acpica
+CFLAGS := -Wall -masm=intel -ffreestanding -m32 --std=c99 -IInclude -IInclude/acpica
 BUILD := ./Build
 
-DIRS := ./Source/core ./Source/devices ./Source/utils 
-#		./Source/acpica ./Source/acpica/debugger ./Source/acpica/disassembler  \
+DIRS := ./Source/core ./Source/devices ./Source/utils \
+		./Source/acpica ./Source/acpica/debugger ./Source/acpica/disassembler  \
 		./Source/acpica/dispatcher ./Source/acpica/events ./Source/acpica/executer  \
 		./Source/acpica/hardware ./Source/acpica/namespace ./Source/acpica/parser  \
 		./Source/acpica/resources ./Source/acpica/tables ./Source/acpica/utilities
 
 BOOTDIR := ./Source/boot
 
-VPATH = ./Source/boot:./Source/core:./Source/devices:./Source/utils
-#		./Source/acpica ./Source/acpica/debugger:./Source/acpica/disassembler: \
-		./Source/acpica/dispatcher:./Source/acpica/events:./Source/acpica/executer: \
+VPATH = ./Source/boot:./Source/core:./Source/devices:./Source/utils: \
+		./Source/acpica:./Source/acpica/debugger:./Source/acpica/disassembler: \
+		./Source/acpica/dispatcher:./Source/acpica/events./Source/acpica/executer: \
 		./Source/acpica/hardware:./Source/acpica/namespace:./Source/acpica/parser: \
-		./Source/acpica/resources:./Source/acpica/tables:./Source/acpica/utilities
+		./Source/acpica/resources:./Source/acpica/tables:./Source/acpica/utilities \
 
 CSOURCES :=  $(wildcard $(addsuffix /*.c,$(DIRS)))
 ASOURCES := $(wildcard $(addsuffix /*.asm,$(DIRS)))
@@ -35,8 +35,8 @@ build: all
 
 all: $(EXTRA_OBJECTS)
 clean: 
-	@rm -rf $(OBJECTS)
+	@rm -rf $(EXTRA_OBJECTS)
 
 %.o: %.c ; @$(CC) $(CFLAGS) -o $@ -c $<
-%.o: %.asm ; $(NASM) -f elf32 $< -o $@
-%.bin: %.asm ; $(NASM) -f bin $< -o $@
+%.o: %.asm ; @$(NASM) -f elf32 $< -o $@
+%.bin: %.asm ; @$(NASM) -f bin $< -o $@

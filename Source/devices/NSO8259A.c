@@ -6,6 +6,6 @@ u8 kernel_init8259A(){
 }
 
 void kernel_deinit8259A(){
-	kernel_outb(0xA1, 0xFF);
-	kernel_outb(0x21, 0xFF);
+	kernel_out8(0xA1, 0xFF);
+	kernel_out8(0x21, 0xFF);
 }

@@ -140,9 +140,11 @@ Read_file:
     pop si
     pop di
     mov ax, word [bx + 10] ;poor
-    mov dx, 0
+    mov dx, word [bx + 12]
     mov cx, 0x800
     div cx
+
+
     
     or dx, dx 
     jz .read_the_file

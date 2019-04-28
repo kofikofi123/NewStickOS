@@ -2,6 +2,7 @@ section .text
 	global kernel_loadPageDirectory
 	global kernel_enablePaging
 	global kernel_updatePaging
+	extern kernel_breakBOCHS
 
 kernel_loadPageDirectory:
 	push ebp

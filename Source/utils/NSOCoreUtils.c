@@ -4,25 +4,25 @@
 
 static u32 _kernel_maxCPUID = 0, _kernel_maxCPUIDEX = 0;
 
-void kernel_outb(u16 port, u8 data){
+void kernel_out8(u16 port, u8 data){
 	__asm__ volatile ("out dx, al"
 			:
 			: "d" (port), "a" (data));
 }
 
-void kernel_outw(u16 port, u16 data){
+void kernel_out16(u16 port, u16 data){
 	__asm__ volatile ("out dx, ax"
 			:
 			: "d" (port), "a" (data));
 }
 
-void kernel_outdw(u16 port, u32 data){
+void kernel_out32(u16 port, u32 data){
 	__asm__ volatile ("out dx, eax"
 			:
 			: "d" (port), "a" (data));
 }
 
-u8 kernel_inb(u16 port){
+u8 kernel_in8(u16 port){
 	u8 data = 0;
 	__asm__ volatile ("in al, dx"
 			: "=a" (data)
@@ -30,7 +30,7 @@ u8 kernel_inb(u16 port){
 	return data;
 }
 
-u16 kernel_inw(u16 port){
+u16 kernel_in16(u16 port){
 	u16 data = 0;
 	__asm__ volatile ("in ax, dx"
 			: "=a" (data)
@@ -38,7 +38,7 @@ u16 kernel_inw(u16 port){
 	return data;
 }
 
-u32 kernel_indw(u16 port){
+u32 kernel_in32(u16 port){
 	u32 data = 0;
 	__asm__ volatile ("in eax, dx"
 			: "=a" (data)

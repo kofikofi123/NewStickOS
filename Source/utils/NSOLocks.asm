@@ -6,6 +6,7 @@ section .text
 
 
 kernel_acquireSpinlock:
+	;cli
 	push ebp
 	mov ebp, esp
 
@@ -16,19 +17,7 @@ kernel_acquireSpinlock:
 .cleanup:
 	mov esp, ebp
 	pop ebp
-	ret
-
-kernel_testSpinlock:
-	push ebp
-	mov ebp, esp
-
-	mov eax, [ebp + 8]
-	mov eax, [eax]
-
-	test eax, 1
-
-	mov esp, ebp
-	pop ebp
+	;sti
 	ret
 
 kernel_releaseLock:
@@ -43,20 +32,26 @@ kernel_releaseLock:
 	ret
 
 kernel_acquireMutex:
+	;cli
 	push ebp
 	mov ebp, esp
+
+	push edi
 	push ecx
 
-	mov eax, [ebp + 8]
-	xor ebx, ebx
+
 	mov ecx, 1
+	mov edi, [ebp + 8]
+	mov eax, 0
 
-	lock cmpxchg eax, ecx
-	test ecx, 1
+	lock cmpxchg [edi], ecx
 
+	xor eax, 1
 	
-
-	pop ebx
+	pop ecx
+	pop edi
+	
 	mov esp, ebp	
 	pop ebp
+	;sti
 	ret

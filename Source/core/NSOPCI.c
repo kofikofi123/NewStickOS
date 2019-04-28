@@ -18,9 +18,18 @@ u16 kernel_pciReadConfig16(u8 busNumber, u8 deviceNumber, u8 function, u8 reg, u
 u32 kernel_pciReadConfig32(u8 busNumber, u8 deviceNumber, u8 function, u8 reg){
 	u32 addr = (0x80000000) | (busNumber << 16) | (deviceNumber << 11) | (function << 8) | (reg << 2);
 
-	kernel_outdw(0xCF8, addr);
+	kernel_out32(0xCF8, addr);
 
-	return kernel_indw(0xCFC);
+	return kernel_in32(0xCFC);
+}
+
+//void kernel_pciWriteConfig16(u8 busNumber, u8 deviceNumber, u8 function, u8 reg, u8 offset, u16 )
+
+void kernel_pciWriteConfig32(u8 busNumber, u8 deviceNumber, u8 function, u8 reg, u32 val){
+	u32 addr = (0x80000000) | (busNumber << 16) | (deviceNumber << 11) | (function << 8) | (reg << 2);
+
+	kernel_out32(0xCF8, addr);
+	kernel_out32(0xCFC, val);
 }
 
 void kernel_pciDebug(u8 bus, u8 device, u8 function){
