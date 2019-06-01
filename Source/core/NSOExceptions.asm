@@ -1,7 +1,10 @@
 %macro isr_entry 0
 	pushad
-	push ds
-	push ss
+	xor eax, eax
+	mov eax, ds
+	push eax
+	mov eax, ss
+	push eax
 	mov ax, 0x10
 	mov ds, ax
 	mov ss, ax

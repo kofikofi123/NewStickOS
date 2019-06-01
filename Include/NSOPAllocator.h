@@ -9,5 +9,6 @@ void kernel_markPage(u32);
 void kernel_markPageAddr(void*);
 void kernel_freePage(void*);
 u32 kernel_findPages(u32);
+void kernel_initPageAllocator2();
 
 #endif

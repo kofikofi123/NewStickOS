@@ -37,9 +37,15 @@ u64 kernel_rdmsr(u32);
 u8 kernel_calculateChecksum(void*, u32);
 //unsafe Basis basic varadic impl
 
+
 #define kernel_va_start(va) \
 	__asm__ volatile("lea eax, [ebp + 12]\n\tmov %0, eax" \
 			: "=r" (va) \
 			: \
 			: "eax");
 #endif
+
+#define kernel_get_next_address(v) \
+	__asm__("mov eax, [ebp + 4]\n\tmov %0, eax\n" \
+				: "=r" (v));
+

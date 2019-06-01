@@ -34,8 +34,9 @@
 #undef ACPI_DISASSEMBLER // 0
 #define ACPI_DEBUGGER 1 // 0 
 //#define ACPI_DEBUG_OUTPUT 1 // 0
+//#define ACPI_DEBUG_PRINT 1
 #define ACPI_CACHE_T                ACPI_MEMORY_LIST
-#define ACPI_USE_LOCAL_CACHE
+#define ACPI_USE_LOCAL_CACHE 
 
 /*
 #define ACPI_USE_ALTERNATE_PROTOTYPE_AcpiOsEnterSleep

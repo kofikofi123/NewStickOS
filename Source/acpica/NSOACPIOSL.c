@@ -20,18 +20,23 @@ ACPI_STATUS AcpiOsTerminate(){
 ACPI_PHYSICAL_ADDRESS AcpiOsGetRootPointer(){
 	ACPI_PHYSICAL_ADDRESS addr = 0;
 	AcpiFindRootPointer(&addr);
+	//kernel_printfBOCHS("okr: %x\n", addr);
 	return addr;
 }
 
 ACPI_STATUS AcpiOsPredefinedOverride(const ACPI_PREDEFINED_NAMES* predefinedObject, ACPI_STRING* NewValue){
+	*NewValue = NULL;
 	return AE_OK;
 }
 
 ACPI_STATUS AcpiOsTableOverride(ACPI_TABLE_HEADER* existingTable, ACPI_TABLE_HEADER** NewTable){
+	*NewTable = NULL;
 	return AE_OK;
 }
 
 ACPI_STATUS AcpiOsPhysicalTableOverride(ACPI_TABLE_HEADER* existingTable, ACPI_PHYSICAL_ADDRESS* newAddress, UINT32* newTableLength){
+	*newAddress = 0;
+	*newTableLength = 0;
 	return AE_OK;
 }
 /////////////////////////////////////////////////////////////////////////////////////
@@ -58,22 +63,35 @@ ACPI_STATUS AcpiOsReleaseObject(ACPI_CACHE_T* Cache, void* object){
 void* AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS PhysAddr, ACPI_SIZE Length){
 	ACPI_SIZE len = ((Length + 0x1000) & ~(0xFFF));
 
-	kernel_mapIdentity((u32)PhysAddr, (u32)(PhysAddr + len), 0x02);
+	if (!kernel_mapIdentity((u32)PhysAddr, (u32)(PhysAddr + len), 0x02))
+		return NULL;
 
 	return ACPI_TO_POINTER(PhysAddr);
 }
 
 void AcpiOsUnmapMemory(void* vaddr, ACPI_SIZE Length){
 	ACPI_SIZE len = ((Length + 0x1000) & ~(0xFFF));
-
 	kernel_unmapIdentity((u32)vaddr, (u32)(vaddr + len));
 }
 
-ACPI_STATUS AcpiOsGetPhysicalAddress(void* logicalAddres, ACPI_PHYSICAL_ADDRESS* physicalAddress){
-	return AE_ERROR;
+ACPI_STATUS AcpiOsGetPhysicalAddress(void* logicalAddress, ACPI_PHYSICAL_ADDRESS* physicalAddress){
+	if (logicalAddress == NULL || physicalAddress == NULL)
+		return AE_BAD_PARAMETER;
+
+	void* temp = kernel_getPhysicalAddress((u32)logicalAddress);
+
+	ACPI_STATUS ret = AE_OK;
+	if (temp == NULL){
+		*physicalAddress = 0;
+		ret = AE_ERROR;
+	}else
+		*physicalAddress = (u32)physicalAddress;
+
+	return ret;
 }
 
 void* AcpiOsAllocate(ACPI_SIZE size){
+	//kernel_printfBOCHS("Allocating: %x bytes\n", size);
 	return kernel_malloc(size, 1);
 }
 
@@ -108,7 +126,13 @@ void AcpiOsWaitEventsComplete(){}
 ////////////////////////////////////////////////////////////////////////
 
 ACPI_STATUS AcpiOsCreateMutex(ACPI_MUTEX* outHandle){
-	*outHandle = kernel_malloc(sizeof(u32), 4);
+	if (outHandle == NULL) return AE_BAD_PARAMETER;
+	void* handle = kernel_malloc(sizeof(u32), 4);
+
+	if (handle == NULL)
+		return AE_NO_MEMORY;
+
+	*outHandle = handle;
 	return AE_OK;
 }
 
@@ -117,6 +141,9 @@ void AcpiOsDeleteMutex(ACPI_MUTEX Handle){
 }
 
 ACPI_STATUS AcpiOsAcquireMutex(ACPI_MUTEX handle, UINT16 timeout){
+	if (handle == NULL) 
+		return AE_BAD_PARAMETER;
+
 	kernel_acquireMutex(handle);
 	//for now
 	return AE_OK;
@@ -130,7 +157,9 @@ ACPI_STATUS AcpiOsCreateSemaphore(UINT32 maxUnits, UINT32 initalUnits, ACPI_SEMA
 	return AE_OK;
 }
 
-ACPI_STATUS AcpiOsDeleteSemaphore(ACPI_SEMAPHORE handle){}
+ACPI_STATUS AcpiOsDeleteSemaphore(ACPI_SEMAPHORE handle){
+	return AE_OK;
+}
 
 ACPI_STATUS AcpiOsWaitSemaphore(ACPI_SEMAPHORE handle, UINT32 units, UINT16 timeout){
 	return AE_OK;
@@ -174,13 +203,13 @@ void AcpiOsReleaseLock(ACPI_SPINLOCK handle, ACPI_CPU_FLAGS flags){
 ///////////////////////////////////////////////////////////////
 
 ACPI_STATUS AcpiOsInstallInterruptHandler(UINT32 interruptLevel, ACPI_OSD_HANDLER handler, void* context){
-	kernel_printfBOCHS("OKR\n");
+	kernel_printfBOCHS("OKR 1\n");
 	__asm__("xchg bx, bx");
 	return AE_OK;
 }
 
 ACPI_STATUS AcpiOsRemoveInterruptHandler(UINT32 interruptLevel, ACPI_OSD_HANDLER handler){
-	kernel_printfBOCHS("OKR\n");
+	kernel_printfBOCHS("OKR 2\n");
 	__asm__("xchg bx, bx");
 	return AE_OK;
 }
@@ -188,6 +217,7 @@ ACPI_STATUS AcpiOsRemoveInterruptHandler(UINT32 interruptLevel, ACPI_OSD_HANDLER
 ///////////////////////////////////////////////////////////////
 
 ACPI_STATUS AcpiOsReadMemory(ACPI_PHYSICAL_ADDRESS address, UINT64* value, UINT32 width){
+	kernel_printfBOCHS("Testing (read): %x\n", address);
 	switch (width){
 		case 8:
 			*(u8*)value = *(u8*)address;
@@ -202,9 +232,11 @@ ACPI_STATUS AcpiOsReadMemory(ACPI_PHYSICAL_ADDRESS address, UINT64* value, UINT3
 			*(u64*)value = *(u64*)address; //possible ono
 			break;
 	}
+	return AE_OK;
 }
 
 ACPI_STATUS AcpiOsWriteMemory(ACPI_PHYSICAL_ADDRESS address, UINT64 value, UINT32 width){
+	kernel_printfBOCHS("Testing (write): %x\n", address);
 	switch (width){
 		case 8:
 			*(u8*)address = (u8)value;
@@ -273,7 +305,7 @@ ACPI_STATUS AcpiOsReadPciConfiguration(ACPI_PCI_ID *pciID, UINT32 reg, UINT64 *v
 
 
 ACPI_STATUS AcpiOsWritePciConfiguration(ACPI_PCI_ID *pciID, UINT32 reg, UINT64 value, UINT32 width){
-	kernel_printfBOCHS("OKR\n");
+	kernel_printfBOCHS("OKR 3\n");
 	__asm__("xchg bx, bx");
 	return AE_OK;
 }
@@ -286,8 +318,7 @@ void ACPI_INTERNAL_VAR_XFACE AcpiOsPrintf(const char* format, ...){
 
 
 void AcpiOsVprintf(const char* format, va_list list){
-		kernel_printfBOCHS("OKR\n");
-	__asm__("xchg bx, bx");
+	kernel_printfBOCHS("OK: \"%s\"", format);
 }
 
 UINT64 AcpiOsGetTimer(){

@@ -39,9 +39,7 @@ void kernel_initPaging(){
 	kernel_mapAddress(pd32, pd32, 0x02);
 	kernel_mapAddress(pt32, pt32, 0x02);
 
-	kernel_breakBOCHS();
 	kernel_loadPageDirectory(_kernel_local_pageDirectory);
-
 }
 
 u8 kernel_mapAddress(u32 virtAddr, u32 physAddr, u8 flags){
@@ -66,13 +64,13 @@ static u8 _kernel_mapAddressR(u32 virtAddr, u32 physAddr, u8 flags){
 	u32 pd = *pd_p;
 	u32* v_new_table = (u32*)(0xFFC00000 + (pId << 12));
 
-	if ((pd & 1) != 1){
+	if (!(pd & 1)){
 		u32* new_table = kernel_allocatePage();
 		if (new_table == NULL) return 0;
 		*pd_p = (u32)new_table | 0x01;
 	}else{
 		u32 t = v_new_table[ptId];
-		if ((t & 1)) return 0;
+		if ((t & 1) && ((t & ~(0xFFF)) != physAddr)) return 0;
 	}
 
 	v_new_table[ptId] = physAddr | flags | 0x01;
@@ -105,8 +103,9 @@ void kernel_unmapAddress(u32 virtAddr){
 }
 
 void kernel_unmapIdentity(u32 from, u32 to){
+	u32 temp = from;
 	from = from & ~(0xFFF);
-	to = to & ~(0xFFF);
+	to = (to + 0x1000) & ~(0xFFF);
 	void(*unmappingFunction)(u32) = _kernel_unmapAddressN;
 	if (_kernel_isPagingEnabled()){
 		unmappingFunction = _kernel_unmapAddressR;
@@ -121,7 +120,7 @@ void kernel_unmapIdentity(u32 from, u32 to){
 //for now, I guess I will just take the performance hit
 u8 kernel_mapIdentity(u32 from, u32 to, u8 flags){
 	from = from & ~(0xFFF);
-	to = to & ~(0xFFF);
+	to = (to) & ~(0xFFF);
 	u8(*mappingFunction)(u32, u32, u8) = _kernel_mapAddressN;
 	if (_kernel_isPagingEnabled())
 		mappingFunction = _kernel_mapAddressR;
@@ -140,6 +139,20 @@ u8 kernel_mapIdentity(u32 from, u32 to, u8 flags){
 
 	return result;
 
+}
+
+void* kernel_getPhysicalAddress(u32 vAddr){ //todo, make better
+	u32 pId = (vAddr >> 22);
+	u32 ptId = (vAddr >> 12) & 0x3FF;
+
+	u32 pd = *(u32*)(0xFFFFF000 + (pId << 2));
+	if (!(pd & 1)) return NULL;
+
+	u32 pt = *((u32*)(0xFFC00000 + (pId << 12)) + ptId);
+
+	if (!(pt & 1)) return NULL;
+
+	return (void*)((pt & ~(0xFFF)) + (vAddr & 0xFFF));
 }
 
 //probably could integrate this somewhere else
@@ -167,7 +180,7 @@ void* kernel_vAllocatePage(u32 addr, u32 pages, u8 flags){
 	void* tempPage = NULL;
 	for (; i < pages; i++){
 		tempPage = kernel_allocatePage();
-
+		//kernel_printfBOCHS("tempPage = %x\n", (u32)tempPage);
 		if (tempPage == NULL)
 			break;
 

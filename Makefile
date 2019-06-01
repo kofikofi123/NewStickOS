@@ -31,6 +31,9 @@ build: all
 	@$(sudo) cp $(BOOTDIR)/*.bin ./DiskContent
 	@$(GII) -V 'MYOS' -no-emul-boot -boot-load-size 4 -b Bootloader.bin -o StickOS.iso DiskContent
 
+build-debug: all
+	@$(LD) -T KernelLinkerScriptDebug.ld $(OBJECTS)
+
 .PHONY: all clean
 
 all: $(EXTRA_OBJECTS)

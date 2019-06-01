@@ -1,6 +1,5 @@
 ENTRY(kernel_main)
-OUTPUT("DiskContent/Stick.bin")
-OUTPUT_FORMAT("binary")
+OUTPUT("DiskContent/Stick.o")
 
 
 SECTIONS 

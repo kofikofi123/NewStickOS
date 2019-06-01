@@ -24,7 +24,7 @@ struct kernel_DescriptorPointers {
 struct kernel_IRegs {
 	u32 ss, ds;
 	u32 edi, esi, ebp, esp, ebx, edx, ecx, eax;
-	u32 error_code;
+	u32 error_code, eip, cs;
 }__attribute__((packed));
 
 

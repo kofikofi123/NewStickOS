@@ -11,6 +11,8 @@ u8 kernel_mapIdentity(u32, u32, u8);
 void kernel_unmapAddress(u32);
 void kernel_unmapIdentity(u32, u32);
 
+void* kernel_getPhysicalAddress(u32);
+
 void* kernel_vAllocatePage(u32, u32, u8);
 void kernel_vFreePage(u32, u32);
 

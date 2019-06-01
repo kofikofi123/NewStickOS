@@ -14,8 +14,8 @@
 extern u32 kernel_end;
 void __attribute__((section("._main"))) kernel_main() {
 	u32 _kernel_end = (u32)&kernel_end;
-	kernel_printfBOCHS("End: %x\n", _kernel_end);
 
+	kernel_printfBOCHS("Kernel end: %x\n", _kernel_end);
 	//grab memory pges
 	kernel_initMemMapB();
 	//init page allocator
@@ -28,8 +28,9 @@ void __attribute__((section("._main"))) kernel_main() {
 
 	//init paging
 	kernel_initPaging();
-	kernel_breakBOCHS();
 	kernel_mapIdentity(0, _kernel_end, 0x02);
+	kernel_initPageAllocator2();
+	
 	kernel_updatePaging();
 	kernel_enablePaging();
 	
@@ -38,12 +39,17 @@ void __attribute__((section("._main"))) kernel_main() {
 	
 	
 	//acpica 
-	{
-		ACPI_STATUS Status = AE_OK;
+	if (ACPI_FAILURE(AcpiInitializeSubsystem()))
+		kernel_panic("Unable to init acpica subsystems");
+	
+	if (ACPI_FAILURE(AcpiInitializeTables(NULL, 16, FALSE)))
+		kernel_panic("Unable to init acpica tables");
+	
+	ACPI_TABLE_HEADER* tbl = NULL;
 
-		//Status = AcpiInitializeSubsystem();
+	AcpiGetTable("FACP", 1, &tbl);
 
-		kernel_printfBOCHS("Is ok (%b)\n", Status == AE_OK);
-	}
+	kernel_printfBOCHS("test: %x\n", (u32)tbl);
+
 	while (1){}	
 }

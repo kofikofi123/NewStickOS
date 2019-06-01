@@ -33,6 +33,7 @@ void kernel_initAllocation(){
 	temp->next = end;
 	temp->prev = &head;
 
+
 }
 
 
@@ -72,6 +73,8 @@ void* kernel_malloc(u32 size, u8 alignment){
 		oldNext->prev = node2;
 	node2->size = ((u32)end - (u32)node2);
 	oldPrev->next = node2;
+
+	//kernel_printfBOCHS("yerr: %x\n", (u32)final);
 
 	return final;
 }
@@ -158,6 +161,7 @@ static struct _kernel_AllocNode* _kernel_allocatorFindSpace(u32 allocSize, u8 al
 	u32 cAddr, addr = 0, addr2 = 0;
 	u8 tal = 0, lat = 0;
 	//u32 ftal = 0;
+	
 	u32 sano = sizeof(struct _kernel_AllocNode);
 	while (node != end){
 		cAddr = ((u32)node);
@@ -206,6 +210,8 @@ static u8 _kernel_extendHEAP(u32 pages){
 	u32 temp = ((u32)end);
 
 	u32* tempA = kernel_vAllocatePage(temp, pages, 0x02);
+
+	//kernel_printfBOCHS("Allocated: %x\n", (u32)tempA);
 
 	if (tempA == NULL) return 0;
 

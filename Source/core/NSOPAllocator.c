@@ -45,19 +45,32 @@ void kernel_initPageAllocator(){
 	u32 sp = (true_end / 0x1000);
 
 	//kernel_memset(_kernel_pBase, 0, (u32)(_kernel_pEnd-_kernel_pBase));
-	
+	u32 base = ((u32)_kernel_pBase & ~(0xFFF)) >> 12;
+	u32 end = (((u32)_kernel_pEnd) & ~(0xFFF)) >> 12;
+
+	for (i = 0; i < maximumPageN; i++){
+		*(_kernel_pBase + i) = 0;
+	}
+	for (i = base; i <= end; i++){
+		*(_kernel_pBase + i) = 0xFF;
+	}
 	for (i = 0; i <= sp; i++){
 		*(_kernel_pBase + i) = 0xFF;
 	}
 
-	for (; i < maximumPageN; i++){
-		*(_kernel_pBase + i) = 0;
-	}
+
 	
+	///////////////////////////////
+	
+	///////////////////////////////
 
 	_kernel_refillPageCache();
 	
 	return;
+}
+
+inline void kernel_initPageAllocator2(){
+	kernel_mapIdentity((u32)_kernel_pBase, (u32)_kernel_pEnd, 0x02);
 }
 
 void* kernel_allocatePage(){
@@ -81,6 +94,7 @@ void* kernel_allocatePage(){
 
 	final_page = (void*)_kernel_page_cache[_kernel_page_cache_p++];
 
+	//kernel_printfBOCHS("New page: %x\n", (u32)final_page);
 	return final_page;
 }
 /*
@@ -97,6 +111,7 @@ static u8 _kernel_refillPageCache(){
 		if (check == 0) break;
 		check--;
 		*(_kernel_pBase + check) = 0xF0;
+		//kernel_printfBOCHS("Refil: %x\n", (check * 0x1000));
 		//kernel_printfBOCHS("%x\n", check * 0x1000);////////////////////////////////////////////////
 		_kernel_page_cache[i] = (check) * 0x1000;
 	}
