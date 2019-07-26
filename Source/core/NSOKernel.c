@@ -95,7 +95,7 @@ void __attribute__((section("._main"))) kernel_main() {
 		ACPI_OBJECT obj;
 		ACPI_BUFFER tempBuffer = {.Length = sizeof(obj), .Pointer=&obj};
 
-		ACPI_STATUS tmep = AcpiEvaluateObject(NULL, "_\\SB.PCI0._HID", NULL, &tempBuffer);
+		ACPI_STATUS tmep = AcpiEvaluateObject(NULL, "\\_SB.PCI0._HID", NULL, &tempBuffer);
 
 		kernel_printfBOCHS(">>>>Okr: %s\n", AcpiFormatException(tmep));
 	}
