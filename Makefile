@@ -4,6 +4,8 @@ NASM := nasm
 GII := genisoimage
 CFLAGS := -Wall -masm=intel -ffreestanding -m32 --std=c99 -IInclude -IInclude/acpica
 BUILD := ./Build
+BOCHS := bochs
+GIT := git
 
 DIRS := ./Source/core ./Source/devices ./Source/utils \
 		./Source/acpica ./Source/acpica/debugger ./Source/acpica/disassembler  \
@@ -33,6 +35,13 @@ build: all
 
 build-debug: all
 	@$(LD) -T KernelLinkerScriptDebug.ld $(OBJECTS)
+
+git-save: $(CSOURCES) $(ASOURCES) $(BSOURCES)
+	@$(GIT) add .
+	@$(GIT) commit -m "git-save"
+
+bochs-run: git-save
+	@$(BOCHS) -f bochs_config.txt -q
 
 .PHONY: all clean
 
