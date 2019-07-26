@@ -95,9 +95,9 @@ void __attribute__((section("._main"))) kernel_main() {
 		ACPI_OBJECT obj;
 		ACPI_BUFFER tempBuffer = {.Length = sizeof(obj), .Pointer=&obj};
 
-		AcpiEvaluateObject(NULL, "_\\SB", NULL, &tempBuffer);
+		AcpiEvaluateObject(NULL, "_\\SB.PCI0._HID", NULL, &tempBuffer);
 
-		kernel_printfBOCHS(">>>>Okr: %x\n", (u32)&obj);
+		kernel_printfBOCHS(">>>>Okr: %x\n", obj.Type == ACPI_TYPE_STRING);
 	}
 	
 	kernel_initateInterruptController();
