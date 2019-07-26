@@ -86,19 +86,19 @@ void __attribute__((section("._main"))) kernel_main() {
 		kernel_free(redirection);
 	}
 
-	/*{
+	{
 		if (ACPI_FAILURE(AcpiInitializeObjects(ACPI_NO_EVENT_INIT))){
 			kernel_panic("Oh no ?");
 		}
 
 		ACPI_BUFFER tempBuffer = {.Length = ACPI_ALLOCATE_BUFFER};
 
-		AcpiEvaluateObject(NULL, "\\SB", NULL, &tempBuffer);
+		AcpiEvaluateObject(NULL, "_\\SB", NULL, &tempBuffer);
 
 		ACPI_OBJECT* test = (ACPI_OBJECT*)tempBuffer.Pointer;
 
 		kernel_printfBOCHS("Okr: %x\n", (u32)test);
-	}*/
+	}
 	
 	kernel_initateInterruptController();
 
