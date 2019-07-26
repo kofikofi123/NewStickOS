@@ -51,6 +51,9 @@ void __attribute__((section("._main"))) kernel_main() {
 	if (ACPI_FAILURE(AcpiInitializeTables(NULL, 16, FALSE)))
 		kernel_panic("Unable to init acpica tables");
 
+	if (ACPI_FAILURE(AcpiLoadTables()))
+		kernel_panic("Unable to load acpi tables");
+
 	{
 		ACPI_TABLE_HEADER* madt = NULL;
 
