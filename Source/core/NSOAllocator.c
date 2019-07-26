@@ -70,9 +70,9 @@ void* kernel_malloc(u32 size, u8 alignment){
 		node2->prev = oldPrev;
 	}
 
-	if (oldNext != end)
+	if (oldNext != end){
 		oldNext->prev = node2;
-	kernel_printfBOCHS("Begin\n");
+	}
 	node2->size = ((u32)oldNext - (u32)node2);
 	oldPrev->next = node2;
 
@@ -142,7 +142,7 @@ void kernel_free(void* ptr){
 	if (nextNode != NULL && nextNode != end)
 		nextNode->prev = newNode;
 
-	_kernel_combineNodes(prevNode);
+	//_kernel_combineNodes(prevNode);
 	//_kernel_combineNodes(prevNode);
 }
 
@@ -225,11 +225,10 @@ static u8 _kernel_extendHEAP(u32 pages){
 }
 
 static void _kernel_combineNodes(struct _kernel_AllocNode* prevNode){
-	if (prevNode == &head){
+	if (prevNode == &head)
 		prevNode = prevNode->next;
-		if (prevNode == end) 
-			return;
-	}else if (prevNode == end)
+
+	if (prevNode == end)
 		return;
 
 	struct _kernel_AllocNode* node = prevNode->next;
