@@ -40,7 +40,7 @@ git-save: $(CSOURCES) $(ASOURCES) $(BSOURCES)
 	@$(GIT) add .
 	@$(GIT) commit -m "git-save"
 
-bochs-run: git-save
+bochs-run: build clean git-save
 	@$(BOCHS) -f bochs_config.txt -q
 
 .PHONY: all clean

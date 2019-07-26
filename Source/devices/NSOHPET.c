@@ -87,6 +87,8 @@ u8 kernel_setupTimer(u32 compTick){ //for  now
 
 	_kernel_writeBlock(block, offset + 0x08, compTick);
 	_kernel_writeBlock(block, offset, (1 << 2) | (1 << 3) | (1 << 8));
+
+	return timer;//fornow
 }
 
 static u32 _kernel_readBlock(u8 block, u16 offset){
