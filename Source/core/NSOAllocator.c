@@ -70,7 +70,7 @@ void* kernel_malloc(u32 size, u8 alignment){
 		node2->prev = oldPrev;
 	}
 
-	kernel_printfBOCHS("oldNext: %x\n", oldNext);
+	kernel_printfBOCHS("oldNext: %x == %x\n", oldNext, (u32)&head);
 
 	if (oldNext != end){
 		oldNext->prev = node2;
@@ -141,7 +141,7 @@ void kernel_free(void* ptr){
 
 	if (nextNode != NULL && nextNode != end)
 		nextNode->prev = newNode;
-	
+
 	//_kernel_combineNodes(prevNode);
 	//_kernel_combineNodes(prevNode);
 }
