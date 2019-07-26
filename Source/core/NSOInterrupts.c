@@ -18,6 +18,7 @@ extern void kernel_isr14();
 
 
 
+
 void kernel_initInterrupts(){
 	kernel_setupTrapGate(kernel_isr0, 0x08, 0, 0, 1, 1);
 	kernel_setupTrapGate(kernel_isr8, 0x08, 8, 0, 1, 1);
@@ -25,6 +26,21 @@ void kernel_initInterrupts(){
 	kernel_setupTrapGate(kernel_isr13, 0x08, 13, 0, 1, 1);
 	kernel_setupTrapGate(kernel_isr14, 0x08, 14, 0, 1, 1);
 
+	extern u32 kernel_isrstub_start;
+	extern u32 kernel_isrstub_end;
+
+	u8 *stubs_start = (u8*)&kernel_isrstub_start, *stubs_end = (u8*)&kernel_isrstub_end;
+	u8 temp_vector = 0x20;
+
+	kernel_printfBOCHS("%x | %x\n", (u32)stubs_start, (u32)stubs_end);
+	
+	while (stubs_start < stubs_end){
+		kernel_setupTrapGate(stubs_start, 0x08, temp_vector, 0, 1, 1);
+		stubs_start += 0x0C;
+		temp_vector += 1;
+	}
+
+	
 	_kernel_local_pointer.size = sizeof(_kernel_local_IDT) - 1;
 	_kernel_local_pointer.location = (u32)_kernel_local_IDT;
 	kernel_flushIDT(&_kernel_local_pointer);

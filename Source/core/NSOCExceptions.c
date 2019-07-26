@@ -19,15 +19,13 @@ void kernel_generalProtectionEX(struct kernel_IRegs iregs){
 }
 
 void kernel_doubleFaultEX(struct kernel_IRegs iregs){
+	kernel_printfBOCHS("OKR: %x\n", iregs.error_code);
 	kernel_panic("Double fault exception");
 }
 
 void __attribute__((cdecl)) kernel_pagingEX(struct kernel_IRegs iregs){
 	u32 eip = iregs.eip;
-	u32 ebp = iregs.ebp;
-	u32 eax = iregs.eax;
-	kernel_printfBOCHS("EIP: %x\nEBP: %x\nEAX: %x", eip, ebp, eax);
-	/*u32 error_code = iregs.error_code;
+	u32 error_code = iregs.error_code;
 	u32 vaddr_cause = 0;
 	__asm__ volatile ("mov eax, cr2"
 					  : "=a" (vaddr_cause));
@@ -37,8 +35,8 @@ void __attribute__((cdecl)) kernel_pagingEX(struct kernel_IRegs iregs){
 	if ((error_code & 2) == 2)
 		read_or_write = "write";
 
-	kernel_breakBOCHS();
-	kernel_printfBOCHS("Paging Fault!!\nVaddr: %x\nError code: %x\nW/R: \"%s\"\nregs: %x\n", vaddr_cause, error_code, read_or_write, eax);
-	kernel_breakBOCHS();*/
+	kernel_printfBOCHS("\n\nPaging Fault!!\nVaddr: %x on %s\nError code: %x\neip: %x\n\n", vaddr_cause, read_or_write, error_code, eip);
+	
+
 	kernel_panic("");
 }

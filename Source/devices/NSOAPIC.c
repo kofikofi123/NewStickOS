@@ -5,7 +5,7 @@
 #include "NSOCoreUtils.h"
 #include "NSOBochs.h"
 
-//static void* _kernel_apicPage = NULL;
+static u8* _kernel_apicPage = NULL;
 
 //todo, make it friendly to MP config3`
 
@@ -20,7 +20,13 @@ void kernel_initAPIC(){
 	kernel_wrmsr(0x1B, new_page32 | (1 << 11));
 	kernel_mapAddress(new_page32, new_page32, 0x02);
 
-	kernel_printfBOCHS("%x\n", *(u32*)(new_page32 + 0x20));
+	_kernel_apicPage = new_page;
+}
+
+void kernel_initAPIC2(){
+	u32 page32 = (u32)_kernel_apicPage;
+	kernel_wrmsr(0x1B, page32 | (1 << 11));
+	kernel_mapAddress(page32, page32, 0x02);
 }
 
 u8 kernel_hasAPIC(){
@@ -28,4 +34,16 @@ u8 kernel_hasAPIC(){
 
 	kernel_cpuid(&a, &b, &c, &d);
 	return (d >> 9) & 0x01;
+}
+
+u32 kernel_readAPICRegister(u16 reg){
+	return *(volatile u32*)(_kernel_apicPage + reg);
+}
+
+void kernel_writeAPICRegister(u16 reg, u32 value){
+	*(volatile u32*)(_kernel_apicPage + reg) = value;
+}
+
+inline void kernel_apicEOI(){
+	kernel_writeAPICRegister(0xB0, 0);
 }

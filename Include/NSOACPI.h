@@ -9,4 +9,14 @@
 
 #include "acpica/acpi.h"
 
+struct kernel_AcpiGAS {
+	u8 AddressSpaceID;
+	u8 RegisterBitWidth;
+	u8 RegisterBitOffset;
+	u8 AccessSize;
+	u64 Address;
+};
+
+
+
 #endif

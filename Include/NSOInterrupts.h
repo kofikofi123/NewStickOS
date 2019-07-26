@@ -20,6 +20,7 @@ struct kernel_IDT {
 	u16 offset1;
 };
 
+typedef void(*kernel_interruptHandle)(struct kernel_IRegs*);
 
 void kernel_initInterrupts();
 

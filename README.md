@@ -30,3 +30,4 @@ ACPICA table management seems to be working now.
 - ###### Add Interrupts
 - ###### Support both APIC and Legacy PIC
 - ###### Add code for GDT
+- ###### Transition to multiprocessor support

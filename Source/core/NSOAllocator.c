@@ -46,6 +46,7 @@ void* kernel_malloc(u32 size, u8 alignment){
 	if (node == NULL) return NULL;
 
 	struct _kernel_AllocNode* oldPrev = node->prev, *oldNext = node->next;
+
 	//u32 oldSize = node->size;
 
 	u32 total_size = paddingSize + size + residueBytes + 6;
@@ -69,12 +70,12 @@ void* kernel_malloc(u32 size, u8 alignment){
 		node2->prev = oldPrev;
 	}
 
-	if (oldNext != end)	
-		oldNext->prev = node2;
-	node2->size = ((u32)end - (u32)node2);
-	oldPrev->next = node2;
+	//kernel_debugAllocator();
 
-	//kernel_printfBOCHS("yerr: %x\n", (u32)final);
+	if (oldNext != end)
+		oldNext->prev = node2;
+	node2->size = ((u32)oldNext - (u32)node2);
+	oldPrev->next = node2;
 
 	return final;
 }
@@ -136,7 +137,7 @@ void kernel_free(void* ptr){
 	newNode->next = nextNode;
 
 	prevNode->next = newNode;
-
+	
 	if (nextNode != NULL && nextNode != end)
 		nextNode->prev = newNode;
 

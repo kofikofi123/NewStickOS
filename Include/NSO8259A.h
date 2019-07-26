@@ -4,6 +4,7 @@
 #include "DataType.h"
 
 u8 kernel_init8259A();
-void kernel_deinit8259A();
+void kernel_8259EOI(u8);
+void kernel_mask8259INTS(u8, u8);
 
 #endif

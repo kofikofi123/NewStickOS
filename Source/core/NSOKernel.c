@@ -10,8 +10,14 @@
 #include "NSOCacheControl.h"
 #include "NSOLocks.h"
 #include "NSOACPI.h"
+#include "NSOMP.h"
+#include "NSOHPET.h"
+#include "NSOIOAPIC.h"
 
 extern u32 kernel_end;
+
+static void _kernel_apicTEST();
+
 void __attribute__((section("._main"))) kernel_main() {
 	u32 _kernel_end = (u32)&kernel_end;
 
@@ -44,12 +50,66 @@ void __attribute__((section("._main"))) kernel_main() {
 	
 	if (ACPI_FAILURE(AcpiInitializeTables(NULL, 16, FALSE)))
 		kernel_panic("Unable to init acpica tables");
+
+	{
+		ACPI_TABLE_HEADER* madt = NULL;
+
+		if (ACPI_FAILURE(AcpiGetTable("APIC", 1, &madt)))
+			kernel_panic("Can't find MADT table");
+
+		///////////////////////////////////_|_//////////////////////////////////
+		///////////////////////////////////_|_/////////////////////////////////
+
+		u8* madt_base8 = (u8*)madt;
+
+		u8* madt_lead = madt_base8 + sizeof(ACPI_TABLE_HEADER) + 8;
+		u8* madt_end = madt_base8 + madt->Length;
+
+		struct kernel_IOAPIC* ioapic = NULL;
+		struct kernel_RedirectionIRQ* redirection = kernel_malloc(sizeof(struct kernel_RedirectionIRQ), 4);
+
+		while (madt_lead < madt_end){
+			u8 type = *(madt_lead);
+			u8 length = *(madt_lead + 1);
+
+			if (type == 0){
+				kernel_newProcessor(*(madt_lead + 2), *(madt_lead + 3), *(u32*)(madt_lead + 4) & 0x01);
+			}else if (type == 1){
+				kernel_newIOAPIC(*(madt_lead + 2), *(u32*)(madt_lead + 4), *(u32*)(madt_lead + 8));
+			}else if (type == 2){
+				kernel_overrideIsaIRQ(*(madt_lead + 3), *(u32*)(madt_lead + 4), *(u16*)(madt_lead + 8));
+			}
+
+			madt_lead = madt_lead + length;
+		}
+
+		kernel_free(redirection);
+	}
+
+	/*{
+		if (ACPI_FAILURE(AcpiInitializeObjects(ACPI_NO_EVENT_INIT))){
+			kernel_panic("Oh no ?");
+		}
+
+		ACPI_BUFFER tempBuffer = {.Length = ACPI_ALLOCATE_BUFFER};
+
+		AcpiEvaluateObject(NULL, "\\SB", NULL, &tempBuffer);
+
+		ACPI_OBJECT* test = (ACPI_OBJECT*)tempBuffer.Pointer;
+
+		kernel_printfBOCHS("Okr: %x\n", (u32)test);
+	}*/
 	
-	ACPI_TABLE_HEADER* tbl = NULL;
+	kernel_initateInterruptController();
 
-	AcpiGetTable("FACP", 1, &tbl);
+	//loops through the pci buses and generates nodes for each device present
+	kernel_enumeratePCI();
 
-	kernel_printfBOCHS("test: %x\n", (u32)tbl);
+	kernel_initHPET();
 
 	while (1){}	
+}
+
+static void _kernel_apicTEST(struct kernel_IRegs* regs){
+	kernel_printfBOCHS("Testing\n");
 }
