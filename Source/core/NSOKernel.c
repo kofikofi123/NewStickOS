@@ -51,8 +51,6 @@ void __attribute__((section("._main"))) kernel_main() {
 	if (ACPI_FAILURE(AcpiInitializeTables(NULL, 16, FALSE)))
 		kernel_panic("Unable to init acpica tables");
 
-	if (ACPI_FAILURE(AcpiLoadTables()))
-		kernel_panic("Unable to load acpi tables");
 
 	{
 		ACPI_TABLE_HEADER* madt = NULL;
@@ -94,13 +92,12 @@ void __attribute__((section("._main"))) kernel_main() {
 			kernel_panic("Oh no ?");
 		}
 
-		ACPI_BUFFER tempBuffer = {.Length = ACPI_ALLOCATE_BUFFER};
+		ACPI_OBJECT obj;
+		ACPI_BUFFER tempBuffer = {.Length = sizeof(obj), .Pointer=&obj};
 
 		AcpiEvaluateObject(NULL, "_\\SB", NULL, &tempBuffer);
 
-		ACPI_OBJECT* test = (ACPI_OBJECT*)tempBuffer.Pointer;
-
-		kernel_printfBOCHS(">>>>Okr: %x\n", (u32)test);
+		kernel_printfBOCHS(">>>>Okr: %x\n", (u32)tempBuffer.Pointer);
 	}
 	
 	kernel_initateInterruptController();
