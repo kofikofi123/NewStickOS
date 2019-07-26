@@ -97,7 +97,7 @@ void __attribute__((section("._main"))) kernel_main() {
 
 		AcpiEvaluateObject(NULL, "_\\SB", NULL, &tempBuffer);
 
-		kernel_printfBOCHS(">>>>Okr: %x\n", (u32)tempBuffer.Pointer);
+		kernel_printfBOCHS(">>>>Okr: %x\n", (u32)&obj);
 	}
 	
 	kernel_initateInterruptController();
