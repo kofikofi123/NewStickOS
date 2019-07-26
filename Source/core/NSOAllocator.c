@@ -70,7 +70,7 @@ void* kernel_malloc(u32 size, u8 alignment){
 		node2->prev = oldPrev;
 	}
 
-	//kernel_debugAllocator();
+	kernel_debugAllocator();
 
 	if (oldNext != end)
 		oldNext->prev = node2;
@@ -137,7 +137,7 @@ void kernel_free(void* ptr){
 	newNode->next = nextNode;
 
 	prevNode->next = newNode;
-	
+
 	if (nextNode != NULL && nextNode != end)
 		nextNode->prev = newNode;
 
