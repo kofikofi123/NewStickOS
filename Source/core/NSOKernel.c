@@ -13,6 +13,7 @@
 #include "NSOMP.h"
 #include "NSOHPET.h"
 #include "NSOIOAPIC.h"
+#include "NSOInterruptCTRL.h"
 
 extern u32 kernel_end;
 

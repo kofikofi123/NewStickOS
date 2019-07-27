@@ -70,13 +70,13 @@ void* kernel_malloc(u32 size, u8 alignment){
 		node2->next = oldNext;
 		node2->prev = oldPrev;
 	}else{
-		kernel_printfBOCHS("%x == %x\n", node2, node);
+		kernel_printfBOCHS("%x == %x\n", node2, oldNext);
 		kernel_panic("");
 	}
 
-	//if (oldNext != end){
+	if (oldNext != end){
 		oldNext->prev = node2;
-	//}
+	}
 
 	oldPrev->next = node2;
 
