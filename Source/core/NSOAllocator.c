@@ -194,10 +194,12 @@ static struct _kernel_AllocNode* _kernel_allocatorFindSpace(u32 allocSize, u8 al
 			lat += (addr2 - addr);
 		}
 
-		kernel_printfBOCHS("Nodesize; %x\n", node->size);
 		if ((node->size) >= (allocSize + tal + lat + 6)){
 			*residueBytes = tal;
 			*paddingSize = lat;
+
+
+			kernel_printfBOCHS("debugging: %x\n", (u32)node);
 			return node;
 		}
 		node = node->next;
