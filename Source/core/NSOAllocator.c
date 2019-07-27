@@ -70,7 +70,8 @@ void* kernel_malloc(u32 size, u8 alignment){
 		node2->next = oldNext;
 		node2->prev = oldPrev;
 	}else{
-		//kernel_panic("What");
+		kernel_debugAllocator();
+		kernel_panic("");
 	}
 
 	kernel_printfBOCHS("siz(%x) oldNext: %x == %x | %x\n", node2->size, oldPrev, oldNext, node2);
