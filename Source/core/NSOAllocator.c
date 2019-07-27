@@ -199,7 +199,7 @@ static struct _kernel_AllocNode* _kernel_allocatorFindSpace(u32 allocSize, u8 al
 			*paddingSize = lat;
 
 
-			kernel_printfBOCHS("debugging: %x\n", (u32)node);
+			kernel_printfBOCHS("debugging: %x\n", (u32)node->size);
 			return node;
 		}
 		node = node->next;
