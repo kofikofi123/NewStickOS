@@ -69,6 +69,10 @@ void* kernel_malloc(u32 size, u8 alignment){
 	if (node2 < oldNext){
 		node2->next = oldNext;
 		node2->prev = oldPrev;
+
+		if (node2->next == &head){
+			kernel_panic("yerp.");
+		}
 	}else{
 		kernel_printfBOCHS("%x == %x\n", node2, oldNext);
 		kernel_panic("");
