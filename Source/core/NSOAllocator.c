@@ -200,6 +200,8 @@ static struct _kernel_AllocNode* _kernel_allocatorFindSpace(u32 allocSize, u8 al
 		}
 		node = node->next;
 	}
+
+	kernel_printfBOCHS("OKR: %x\n", 903293);
 	return NULL;
 }
 
