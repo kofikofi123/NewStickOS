@@ -147,12 +147,12 @@ void kernel_free(void* ptr){
 
 	prevNode->next = newNode;
 
+	kernel_printfBOCHS("(free) %x | %x\n", newNode->prev, newNode->next);
+
 	if (nextNode != NULL && nextNode != end)
 		nextNode->prev = newNode;
 
 	
-
-	kernel_printfBOCHS("siz: %x | nodes: %x | %x | %x\n", totalSize, prevNode, newNode, nextNode);
 
 	//_kernel_combineNodes(prevNode);
 	//_kernel_combineNodes(prevNode);
