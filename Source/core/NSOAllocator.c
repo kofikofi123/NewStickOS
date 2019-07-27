@@ -74,12 +74,9 @@ void* kernel_malloc(u32 size, u8 alignment){
 		kernel_panic("");
 	}
 
-
-	kernel_printfBOCHS("siz(%x) oldNext: %x == %x | %x\n", node2->size, oldPrev, oldNext, node2);
-
-	if (oldNext != end){
+	//if (oldNext != end){
 		oldNext->prev = node2;
-	}
+	//}
 
 	oldPrev->next = node2;
 
