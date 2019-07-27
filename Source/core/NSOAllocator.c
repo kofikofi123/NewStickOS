@@ -70,9 +70,10 @@ void* kernel_malloc(u32 size, u8 alignment){
 		node2->next = oldNext;
 		node2->prev = oldPrev;
 	}else{
-		kernel_debugAllocator();
+		kernel_printfBOCHS("%x == %x\n", node2 == oldNext);
 		kernel_panic("");
 	}
+
 
 	kernel_printfBOCHS("siz(%x) oldNext: %x == %x | %x\n", node2->size, oldPrev, oldNext, node2);
 
@@ -199,7 +200,6 @@ static struct _kernel_AllocNode* _kernel_allocatorFindSpace(u32 allocSize, u8 al
 			*paddingSize = lat;
 
 
-			kernel_printfBOCHS("debugging: %x\n", (u32)node);
 			return node;
 		}
 		node = node->next;
