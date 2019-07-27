@@ -64,6 +64,7 @@ void* kernel_malloc(u32 size, u8 alignment){
 
 	struct _kernel_AllocNode* node2 = (void*)node + total_size;
 
+	node2->size = ((u32)oldNext - (u32)node2);
 
 	if (node2 < oldNext){
 		node2->next = oldNext;
@@ -77,7 +78,7 @@ void* kernel_malloc(u32 size, u8 alignment){
 	if (oldNext != end){
 		oldNext->prev = node2;
 	}
-	node2->size = ((u32)oldNext - (u32)node2);
+
 	oldPrev->next = node2;
 
 	return final;
