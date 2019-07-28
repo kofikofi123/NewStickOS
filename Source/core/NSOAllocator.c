@@ -40,6 +40,7 @@ void kernel_initAllocation(){
 void* kernel_malloc(u32 size, u8 alignment){
 	u8 paddingSize = 0;
 	u8 residueBytes = 0;
+	u8 finalPadding = 0;
 
 	struct _kernel_AllocNode* node = _kernel_allocatorFindSpace(size, alignment, &paddingSize, &residueBytes);
 
@@ -51,17 +52,21 @@ void* kernel_malloc(u32 size, u8 alignment){
 
 	u32 total_size = paddingSize + size + residueBytes + 6;
 
-	u32* sizor = (u32*)node;
+	struct _kernel_AllocNode* node2 = (void*)node + total_size;
 
+	u32 tempA = (u32)node2, tempB = (u32)oldNext;
+
+	if ((tempB - tempA) < sizeof(struct _kernel_AllocNode)){
+		kernel_panic("Over here\n");
+	}
+
+	u32* sizor = (u32*)node;
 	*sizor++ = 0x80000000 | size;
 
 	u16* paddingB = (void*)sizor + residueBytes;
-
 	*paddingB++ = ((u16)residueBytes << 8) | paddingSize;
 
 	void* final = (void*)paddingB;
-
-	struct _kernel_AllocNode* node2 = (void*)node + total_size;
 
 	if (node2 < oldNext){
 		node2->size = ((u32)oldNext - (u32)node2);
@@ -186,13 +191,6 @@ static struct _kernel_AllocNode* _kernel_allocatorFindSpace(u32 allocSize, u8 al
 			addr2 = (addr + 4) & ~(3);
 			lat += (addr2 - addr);
 		}
-
-		if ((nAddr - addr2) < sizeof(struct _kernel_AllocNode)){
-			lat += (nAddr - addr2);
-
-		}
-
-		kernel_printfBOCHS("GOttem: %x\n", (addr2));
 
 		if ((node->size) >= (allocSize + tal + lat + 6)){
 			*residueBytes = tal;
