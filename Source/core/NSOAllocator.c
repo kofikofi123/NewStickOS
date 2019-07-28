@@ -71,6 +71,10 @@ void* kernel_malloc(u32 size, u8 alignment){
 		node2->prev = oldPrev;
 
 	}
+
+	if (oldNext != end)
+		oldNext->prev = node2;
+	oldPrev->next = node2;
 	return final;
 }
 
