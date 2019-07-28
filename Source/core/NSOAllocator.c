@@ -65,7 +65,7 @@ void* kernel_malloc(u32 size, u8 alignment){
 	*sizor++ = 0x80000000 | size;
 
 	u16* paddingB = (void*)sizor + residueBytes;
-	*paddingB++ = ((u16)residueBytes << 8) | (paddingSize + paddingSize);
+	*paddingB++ = ((u16)residueBytes << 8) | (paddingSize + finalPadding);
 
 	void* final = (void*)paddingB;
 
