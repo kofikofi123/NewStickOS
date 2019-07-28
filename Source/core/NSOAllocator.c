@@ -67,7 +67,7 @@ void* kernel_malloc(u32 size, u8 alignment){
 	node2->size = ((u32)oldNext - (u32)node2);
 
 
-	kernel_printfBOCHS("Malloc|Newnode: %x|oldnode: %x\n|prev: %x|next: %x\n", (u32)node2, (u32)node, (u32)oldPrev, (u32)oldNext);
+	kernel_printfBOCHS("Malloc|Newnode: %x|oldnode: %x\n|prev: %x|next: %x|size:%x\n", (u32)node2, (u32)node, (u32)oldPrev, (u32)oldNext, size);
 	if (node2 < oldNext){
 		node2->next = oldNext;
 		node2->prev = oldPrev;
