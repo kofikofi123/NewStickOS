@@ -58,7 +58,7 @@ void* kernel_malloc(u32 size, u8 alignment){
 
 	if ((tempB - tempA) < sizeof(struct _kernel_AllocNode)){
 		kernel_printfBOCHS("Node: %x\n", (u32)node);
-		finalPadding = (tempB - tempA) - 1;
+		finalPadding = (tempB - tempA);
 		node2 = oldNext;
 	}
 
@@ -70,6 +70,7 @@ void* kernel_malloc(u32 size, u8 alignment){
 
 	void* final = (void*)paddingB;
 
+
 	if (node2 < oldNext){
 		node2->size = ((u32)oldNext - (u32)node2);
 
@@ -80,7 +81,7 @@ void* kernel_malloc(u32 size, u8 alignment){
 			oldNext->prev = node2;
 		oldPrev->next = node2;
 	}else{
-		kernel_printfBOCHS("OKR: %x\n", node2->prev->prev->next);
+		kernel_printfBOCHS("OKR: %x\n", final);
 		kernel_panic("");
 	}
 	return final;
