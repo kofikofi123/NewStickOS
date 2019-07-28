@@ -80,7 +80,9 @@ void* kernel_malloc(u32 size, u8 alignment){
 			oldNext->prev = node2;
 		oldPrev->next = node2;
 	}else{
-		kernel_printfBOCHS("OKR: %x\n", node2);
+		kernel_printfBOCHS("OKR: %x\n", node2->prev);
+		node2->prev=oldNext;
+		//node2->next
 	}
 	return final;
 }
@@ -168,7 +170,7 @@ void kernel_debugAllocator(){
 static struct _kernel_AllocNode* _kernel_allocatorFindSpace(u32 allocSize, u8 alignment, u8* paddingSize, u8* residueBytes){
 	struct _kernel_AllocNode* node = head.next;
 
-	u32 cAddr, addr = 0, addr2 = 0, nAddr = 0;
+	u32 cAddr, addr = 0, addr2 = 0;
 	u8 tal = 0, lat = 0;
 	//u32 ftal = 0;
 	
@@ -176,7 +178,6 @@ static struct _kernel_AllocNode* _kernel_allocatorFindSpace(u32 allocSize, u8 al
 	while (node != end){
 		cAddr = ((u32)node);
 		addr = (cAddr + 6);
-		nAddr = (u32)node->next;
 
 		if ((addr % alignment) != 0){
 			addr2 = (addr + alignment) & ~(alignment - 1);
