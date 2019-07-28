@@ -51,7 +51,6 @@ void* kernel_malloc(u32 size, u8 alignment){
 
 	u32 total_size = paddingSize + size + residueBytes + 6;
 
-
 	u32* sizor = (u32*)node;
 
 	*sizor++ = 0x80000000 | size;
@@ -64,21 +63,16 @@ void* kernel_malloc(u32 size, u8 alignment){
 
 	struct _kernel_AllocNode* node2 = (void*)node + total_size;
 
-	node2->size = ((u32)oldNext - (u32)node2);
-
-
-	kernel_printfBOCHS("Malloc|Newnode: %x(%x)|oldnode: %x\n|prev: %x|next: %x|size:%x\n", (u32)node2, node2->size, (u32)node, (u32)oldPrev, (u32)oldNext, size);
 	if (node2 < oldNext){
+		node2->size = ((u32)oldNext - (u32)node2);
+
 		node2->next = oldNext;
 		node2->prev = oldPrev;
 
-	}else{
-		kernel_panic("Over here");
+		if (oldNext != end)
+			oldNext->prev = node2;
+		oldPrev->next = node2;
 	}
-
-	if (oldNext != end)
-		oldNext->prev = node2;
-	oldPrev->next = node2;
 	return final;
 }
 
@@ -165,7 +159,7 @@ void kernel_debugAllocator(){
 static struct _kernel_AllocNode* _kernel_allocatorFindSpace(u32 allocSize, u8 alignment, u8* paddingSize, u8* residueBytes){
 	struct _kernel_AllocNode* node = head.next;
 
-	u32 cAddr, addr = 0, addr2 = 0;
+	u32 cAddr, addr = 0, addr2 = 0, nAddr = 0;
 	u8 tal = 0, lat = 0;
 	//u32 ftal = 0;
 	
@@ -173,6 +167,7 @@ static struct _kernel_AllocNode* _kernel_allocatorFindSpace(u32 allocSize, u8 al
 	while (node != end){
 		cAddr = ((u32)node);
 		addr = (cAddr + 6);
+		nAddr = (u32)node->next;
 
 		if ((addr % alignment) != 0){
 			addr2 = (addr + alignment) & ~(alignment - 1);
@@ -189,6 +184,10 @@ static struct _kernel_AllocNode* _kernel_allocatorFindSpace(u32 allocSize, u8 al
 		if ((addr % 4) != 0){
 			addr2 = (addr + 4) & ~(3);
 			lat += (addr2 - addr);
+		}
+
+		if ((nAddr - addr2) < sizeof(struct _kernel_AllocNode)){
+			lat += (nAddr - addr2);
 		}
 
 		if ((node->size) >= (allocSize + tal + lat + 6)){
