@@ -70,8 +70,6 @@ void* kernel_malloc(u32 size, u8 alignment){
 		node2->next = oldNext;
 		node2->prev = oldPrev;
 
-	}else if (node2 >= oldNext){
-		_kernel_combineNodes(node2);
 	}
 	return final;
 }
