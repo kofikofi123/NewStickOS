@@ -79,6 +79,8 @@ void* kernel_malloc(u32 size, u8 alignment){
 		if (oldNext != end)
 			oldNext->prev = node2;
 		oldPrev->next = node2;
+	}else{
+		kernel_printfBOCHS("%x\n", node2->next);
 	}
 	return final;
 }
