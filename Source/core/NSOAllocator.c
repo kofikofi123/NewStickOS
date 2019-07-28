@@ -189,8 +189,10 @@ static struct _kernel_AllocNode* _kernel_allocatorFindSpace(u32 allocSize, u8 al
 
 		if ((nAddr - addr2) < sizeof(struct _kernel_AllocNode)){
 			lat += (nAddr - addr2);
-			kernel_printfBOCHS("GOttem: %x\n", (nAddr-addr2));
+
 		}
+
+		kernel_printfBOCHS("GOttem: %x\n", (nAddr-addr2));
 
 		if ((node->size) >= (allocSize + tal + lat + 6)){
 			*residueBytes = tal;
