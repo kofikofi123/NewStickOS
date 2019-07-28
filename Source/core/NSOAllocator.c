@@ -70,6 +70,8 @@ void* kernel_malloc(u32 size, u8 alignment){
 		node2->next = oldNext;
 		node2->prev = oldPrev;
 
+	}else{
+		kernel_panic("Over here");
 	}
 
 	if (oldNext != end)
