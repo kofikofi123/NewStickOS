@@ -88,7 +88,19 @@ void __attribute__((section("._main"))) kernel_main() {
 		kernel_free(redirection);
 	}
 
+	//memory allocator stress test
 	{
+		void* _kernel_testPointers[50] = {0};
+		volatile u8 i = 0;
+
+		for (i = 0; i < 50; i++){
+			_kernel_testPointers[i] = kernel_malloc(5, 1);
+		}
+
+		kernel_debugAllocator();
+	}
+
+	/*{
 		if (ACPI_FAILURE(AcpiInitializeObjects(ACPI_NO_EVENT_INIT))){
 			kernel_panic("Oh no ?");
 		}
@@ -99,7 +111,7 @@ void __attribute__((section("._main"))) kernel_main() {
 		ACPI_STATUS tmep = AcpiEvaluateObject(NULL, "\\_SB.PCI0._HID", NULL, &tempBuffer);
 
 		kernel_printfBOCHS(">>>>Okr: %s\n", AcpiFormatException(tmep));
-	}
+	}*/
 	
 	kernel_initateInterruptController();
 
