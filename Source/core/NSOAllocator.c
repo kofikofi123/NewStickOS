@@ -57,7 +57,8 @@ void* kernel_malloc(u32 size, u8 alignment){
 	u32 tempA = (u32)node2, tempB = (u32)oldNext;
 
 	if ((tempB - tempA) < sizeof(struct _kernel_AllocNode)){
-		kernel_panic("Over here\n");
+		finalPadding += (tempB - tempA);
+		node2 = (void*)node + total_size + finalPadding;
 	}
 
 	u32* sizor = (u32*)node;
