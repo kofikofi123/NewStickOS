@@ -82,7 +82,7 @@ void* kernel_malloc(u32 size, u8 alignment){
 		oldPrev->next = node2;
 	}else{
 		oldPrev->next=node2;
-		kernel_printfBOCHS("OKR: %x\n", node2->prev->next);
+		kernel_printfBOCHS("OKR: %x %x\n", node2->prev, oldPrev);
 		kernel_panic("");
 	}
 	return final;
