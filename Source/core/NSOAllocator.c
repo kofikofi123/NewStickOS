@@ -59,13 +59,14 @@ void* kernel_malloc(u32 size, u8 alignment){
 	if ((tempB - tempA) < sizeof(struct _kernel_AllocNode)){
 		finalPadding += (tempB - tempA);
 		node2 = (void*)node + total_size + finalPadding;
+		kernel_printfBOCHS("padding size: %x\n", finalPadding);
 	}
 
 	u32* sizor = (u32*)node;
 	*sizor++ = 0x80000000 | size;
 
 	u16* paddingB = (void*)sizor + residueBytes;
-	*paddingB++ = ((u16)residueBytes << 8) | paddingSize;
+	*paddingB++ = ((u16)residueBytes << 8) | (paddingSize + paddingSize);
 
 	void* final = (void*)paddingB;
 
