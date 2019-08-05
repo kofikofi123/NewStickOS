@@ -1,6 +1,8 @@
 #include "NSOHPET.h"
 #include "NSOACPI.h"
 #include "NSOAllocator.h"
+#include "NSOBochs.h"
+#include "NSOCoreUtils.h"
 #include "NSOPaging.h"
 
 #define _KERNEL_CONVTIMERREG(t) (t << 5) + 0x100
@@ -23,7 +25,7 @@ struct _kernel_timerInfo _kernel_tiHead = {
 
 static u8 _kernel_numOfUsedTimers();
 static struct _kernel_timerInfo* _kernel_getLastTimer();
-static void _kernel_appendTimer(struct _kernel_timerInfo*);
+//static void _kernel_appendTimer(struct _kernel_timerInfo*);
 static u8 _kernel_getNumTimerInBlock(u8);
 
 static u8 _kernel_timersAreConsumed();
@@ -42,6 +44,8 @@ void kernel_initHPET(){
 
 		u8* hpetIndex = (u8*)hpetHeader + sizeof(ACPI_TABLE_HEADER);
 
+		kernel_printfBOCHS("hpetIndex: %x\n", hpetIndex);
+
 		struct kernel_AcpiGAS* gas = (struct kernel_AcpiGAS*)(hpetIndex + 4);
 		u32 address = gas->Address;
 
@@ -55,7 +59,7 @@ void kernel_initHPET(){
 
 u8 kernel_getNumOfTimers(){
 	u8 num = 0;
-	u32 temp = 0, *tempAddr = NULL;
+	u32 temp = 0;
 	for (u8 i = 0; i < _kernel_numTimers; i++){
 		temp = _kernel_readBlock(i, 0);
 		num = num + ((temp >> 8) & 0x1F) + 1;
@@ -105,7 +109,7 @@ static void _kernel_writeBlock(u8 block, u16 offset, u32 value){
 
 static u8 _kernel_numOfUsedTimers(){
 	u8 num = 0;
-	struct kernel_timerInfo* timers = _kernel_tiHead.next;
+	struct _kernel_timerInfo* timers = _kernel_tiHead.next;
 
 	while (timers != NULL)
 		num++;
@@ -125,14 +129,14 @@ static struct _kernel_timerInfo* _kernel_getLastTimer(){
 	return timers;
 }
 
-static void _kernel_appendTimer(struct _kernel_timerInfo* timer){
+/*static void _kernel_appendTimer(struct _kernel_timerInfo* timer){
 	struct _kernel_timerInfo* base = _kernel_getLastTimer();
 
 	if (base == NULL)
 		base = &_kernel_tiHead;
 
 	base->next = timer;
-}
+}*/
 
 static u8 _kernel_timersAreConsumed(){
 	return !(kernel_getNumOfTimers() - _kernel_numOfUsedTimers()); 

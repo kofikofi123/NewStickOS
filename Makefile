@@ -38,7 +38,7 @@ build-debug: all
 
 git-save: $(CSOURCES) $(ASOURCES) $(BSOURCES)
 	@$(GIT) add .
-	@$(GIT) commit -m "git-save"
+	@$(GIT) commit -m "oke"
 
 bochs-run: build clean
 	@$(BOCHS) -f bochs_config.txt -q

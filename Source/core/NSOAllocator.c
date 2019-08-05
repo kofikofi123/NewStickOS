@@ -4,6 +4,8 @@
 #include "NSOCoreUtils.h"
 #include "NSOAllocator.h"
 
+//basic linked list virtual allocator
+
 struct _kernel_AllocNode {
 	u32 size;
 	struct _kernel_AllocNode* next;
@@ -14,10 +16,10 @@ struct _kernel_AllocNode {
 struct _kernel_AllocNode head;
 struct _kernel_AllocNode* end;
 
+
+static void* _kernel_allocatorReserveSpace(u32, u8);
+static struct _kernel_AllocNode* _kernel_findNearestPrevNode(const struct _kernel_AllocNode*);
 static u8 _kernel_extendHEAP(u32);
-static struct _kernel_AllocNode* _kernel_allocatorFindSpace(u32, u8, u8*, u8*);
-static struct _kernel_AllocNode* _kernel_findNearestNode(struct _kernel_AllocNode*);
-static void _kernel_combineNodes(struct _kernel_AllocNode*);
 
 void kernel_initAllocation(){
 	struct _kernel_AllocNode* temp = NULL;
@@ -25,138 +27,155 @@ void kernel_initAllocation(){
 	if (!_kernel_extendHEAP(4))
 		kernel_panic("Cannot setup kernel heap");
 
-	head.size = (u32)end - 0xC0000000;
+	head.size = 0;
 	head.next = temp;
 	head.prev = NULL;
 
-	temp->size = head.size;
+	temp->size = (u32)end - 0xC0000000;
 	temp->next = end;
 	temp->prev = &head;
-
-
 }
 
 
-void* kernel_malloc(u32 size, u8 alignment){
-	u8 paddingSize = 0;
-	u8 residueBytes = 0;
-	u8 finalPadding = 0;
+inline void* kernel_malloc(u32 allocSize, u8 alignment){
+	return _kernel_allocatorReserveSpace(allocSize, alignment);
+}
 
-	struct _kernel_AllocNode* node = _kernel_allocatorFindSpace(size, alignment, &paddingSize, &residueBytes);
+static void* _kernel_allocatorReserveSpace(u32 allocSize, u8 alignment){
+	struct _kernel_AllocNode* currentNode = head.next;
 
-	if (node == NULL) return NULL;
+	u32 currentAddr, tempAddr, totalSize, nextAddr;
+	u8 alignmentPadding, padding;
 
-	struct _kernel_AllocNode* oldPrev = node->prev, *oldNext = node->next;
+	const u32 addingTemp = 6 + allocSize;
 
-	//u32 oldSize = node->size;
+	while (currentNode != NULL){
+		currentAddr = tempAddr = (u32)currentNode + 6;
+		nextAddr = (u32)currentNode->next;
+		alignmentPadding = padding = 0;
 
-	u32 total_size = paddingSize + size + residueBytes + 6;
+		if ((currentAddr % alignment) != 0){
+			tempAddr = (currentAddr + alignment) & ~(alignment - 1);
+			alignmentPadding = (tempAddr - currentAddr);
+			currentAddr = tempAddr + alignmentPadding;
+		}
 
-	struct _kernel_AllocNode* node2 = (void*)node + total_size;
 
-	u32 tempA = (u32)node2, tempB = (u32)oldNext;
+		currentAddr += allocSize;
 
-	if ((tempB - tempA) < sizeof(struct _kernel_AllocNode)){
-		kernel_printfBOCHS("Node: %x\n", (u32)node);
-		finalPadding = (tempB - tempA);
-		node2 = oldNext;
+		if ((currentAddr % 4) != 0){
+			tempAddr = (currentAddr + 4) & ~(3);
+			padding = (tempAddr - currentAddr);
+			currentAddr = tempAddr + padding;
+		}
+
+		u32 diffAddr = (nextAddr - currentAddr);
+		if (diffAddr < sizeof(struct _kernel_AllocNode))
+			padding += diffAddr;
+		
+
+		totalSize = addingTemp + alignmentPadding + padding;
+		if (currentNode->size >= (totalSize))
+			break;
+		else
+			currentNode = currentNode->next;
 	}
 
-	u32* sizor = (u32*)node;
-	*sizor++ = 0x80000000 | size;
+	void* final = currentNode, *finalTemp = final;
+	if (final != NULL){
+		struct _kernel_AllocNode* prevNode = currentNode->prev, *nextNode = currentNode->next;
 
-	u16* paddingB = (void*)sizor + residueBytes;
-	*paddingB++ = ((u16)residueBytes << 8) | (paddingSize + finalPadding);
+		u32* sizeBlock = (u32*)(final);
+		u16* paddingBlock = (u16*)(final + 4 + alignmentPadding);
 
-	void* final = (void*)paddingB;
+		*sizeBlock = totalSize;
+		
+		*paddingBlock = (((u16)(alignmentPadding)) << 8) | padding;
 
+		final = (finalTemp + 6 + alignmentPadding);
 
-	if (node2 < oldNext){
-		node2->size = ((u32)oldNext - (u32)node2);
+		struct _kernel_AllocNode* newNode = (struct _kernel_AllocNode*)(finalTemp + totalSize);
+		
+		if (newNode < nextNode){
+			newNode->next = nextNode;
+			newNode->size = (u32)nextNode - (u32)newNode;
 
-		node2->next = oldNext;
-		node2->prev = oldPrev;
+			if (nextNode != end)
+				nextNode->prev = newNode;
 
-		if (oldNext != end)
-			oldNext->prev = node2;
-		oldPrev->next = node2;
-	}else{
-		node2->prev=oldPrev;
-		oldPrev->next=node2;
-		kernel_printfBOCHS("OKR: %x %x\n", node2->prev, oldPrev);
-		kernel_panic("");
+		}
+		newNode->prev = prevNode;
+		prevNode->next = newNode;
 	}
+
 	return final;
 }
 
-void* kernel_calloc(u32 size, u8 alignment){
-	void* ptr = kernel_malloc(size, alignment);
+void* kernel_calloc(u32 allocSize, u8 alignment){
+	void* ptr = _kernel_allocatorReserveSpace(allocSize, alignment);
 
 	if (ptr != NULL)
-		kernel_memset(ptr, 0, size);
+		kernel_memset(ptr, 0, allocSize);
 
 	return ptr;
 }
 
-void* kernel_realloc(void* old, u32 newSize, u8 alignment){
-	if (old == NULL) return kernel_malloc(newSize, alignment);
-	if (newSize == 0) return NULL;
+void* kernel_realloc(void* old, u32 allocSize, u8 alignment){
+	if (allocSize == 0) return NULL;
 
-	void* new = kernel_malloc(newSize, alignment);
+	void* new = _kernel_allocatorReserveSpace(allocSize, alignment);
 	if (new == NULL) return NULL;
 
-	kernel_memcpy(new, old, newSize);
+	if (!old)
+		kernel_memcpy(new, old, allocSize);
+
 	kernel_free(old);
 	return new;
 }
 
-	
 void kernel_free(void* ptr){
 	if (ptr == NULL) return;
+	if (ptr < (void*)0xC0000000 || ptr >= (void*)end) return;
 
-	if ((u32)ptr < 0xC0000000) return;
+	u32* sizeBlock = NULL;
+	u16* paddingBlock = (u16*)(ptr) - 1;
 
-	u16* vpr = ((u16*)ptr) - 1;
+	u32 totalSize = 0;
+	u16 tempPadding = *paddingBlock;
 
-	u16 pr = *vpr;
+	u8 alignmentPadding = (tempPadding >> 8);
 
-	u8 residueBytes = (pr >> 8);
-	u8 paddingBytes = (pr & 0xFF);
+	sizeBlock = (u32*)(ptr - 6 - alignmentPadding);
+	totalSize = *sizeBlock;
 
-	u32* header = (void*)vpr - residueBytes - 4;
-	u32 allocSize = *header;
+	struct _kernel_AllocNode* node = (struct _kernel_AllocNode*)sizeBlock;
+	struct _kernel_AllocNode* prevNode = _kernel_findNearestPrevNode(node);
+	struct _kernel_AllocNode* nextNode = prevNode->next;
 
-	if ((allocSize & 0x80000000) != 0x80000000) {
-		return;
+	node->size = totalSize;
+	node->prev = prevNode;
+	node->next = nextNode;
+
+
+	if (nextNode != end)
+		nextNode->prev = node;
+	prevNode->next = node;
+
+
+}
+
+u32 kernel_allocatorSize(){
+	struct _kernel_AllocNode* current = head.next;
+	u32 size = 0;
+
+	while (current != NULL){
+		size += current->size;
+		current = current->next;
 	}
 
-	allocSize = allocSize & ~(0x80000000);
-
-	u32 totalSize = allocSize + residueBytes + paddingBytes + 6;
-
-	struct _kernel_AllocNode* newNode = (struct _kernel_AllocNode*)header, *prevNode = NULL, *nextNode = NULL;
-
-	newNode->size = totalSize;
-
-	prevNode = _kernel_findNearestNode(newNode);
-
-	nextNode = prevNode->next;
-	
-	newNode->prev = prevNode;
-	newNode->next = nextNode;
-
-	prevNode->next = newNode;
-
-
-	if (nextNode != NULL && nextNode != end)
-		nextNode->prev = newNode;
-
-	
-	kernel_printfBOCHS("Free|Newnode: %x|prev: %x|next: %x\n", (u32)newNode, (u32)prevNode, (u32)nextNode);
-	
-	_kernel_combineNodes(prevNode);
-	//_kernel_combineNodes(prevNode);
+	return size;
 }
+
 
 void kernel_debugAllocator(){
 	struct _kernel_AllocNode* curNode = head.next, *nextNode = NULL;
@@ -169,59 +188,20 @@ void kernel_debugAllocator(){
 	kernel_printStringBOCHS("End\n");
 }
 
-static struct _kernel_AllocNode* _kernel_allocatorFindSpace(u32 allocSize, u8 alignment, u8* paddingSize, u8* residueBytes){
-	struct _kernel_AllocNode* node = head.next;
-
-	u32 cAddr, addr = 0, addr2 = 0;
-	u8 tal = 0, lat = 0;
-	//u32 ftal = 0;
-	
-	u32 sano = sizeof(struct _kernel_AllocNode);
-	while (node != end){
-		cAddr = ((u32)node);
-		addr = (cAddr + 6);
-
-		if ((addr % alignment) != 0){
-			addr2 = (addr + alignment) & ~(alignment - 1);
-			tal = (addr2 - addr);
-			addr = addr2;
-		}
-
-		addr += allocSize;
-
-		u32 temp = (addr - cAddr);
-		if (temp < sano)
-			lat = (sano - temp);
-
-		if ((addr % 4) != 0){
-			addr2 = (addr + 4) & ~(3);
-			lat += (addr2 - addr);
-		}
-
-		if ((node->size) >= (allocSize + tal + lat + 6)){
-			*residueBytes = tal;
-			*paddingSize = lat;
 
 
-			return node;
-		}
-		node = node->next;
-	}
+static struct _kernel_AllocNode* _kernel_findNearestPrevNode(const struct _kernel_AllocNode* other){
+	struct _kernel_AllocNode* current = head.next, *temp = &head;
 
-	return NULL;
-}
-
-static struct _kernel_AllocNode* _kernel_findNearestNode(struct _kernel_AllocNode* node){
-	struct _kernel_AllocNode* tempA = head.next, *tempB = &head;
-
-	while (tempA != NULL){
-		if (tempA > node)
+	while (current != NULL){
+		if (current < other)
+			temp = current;
+		else
 			break;
-		tempB = tempA;
-		tempA = tempA->next;
+		current = current->next;
 	}
 
-	return tempB;
+	return temp;
 }
 
 static u8 _kernel_extendHEAP(u32 pages){
@@ -239,32 +219,3 @@ static u8 _kernel_extendHEAP(u32 pages){
 
 	return 1;
 }
-
-static void _kernel_combineNodes(struct _kernel_AllocNode* prevNode){
-	if (prevNode == &head)
-		prevNode = prevNode->next;
-
-	if (prevNode == end)
-		return;
-
-	struct _kernel_AllocNode* node = prevNode->next;
-
-	if (node == end) return;
-
-	void* temp = (void*)node;
-	void* tempA = (void*)prevNode, *tempB = tempA + prevNode->size;
-
-	if (temp <= tempB){
-		struct _kernel_AllocNode* tempNext = node->next;
-		u32 tempSize = node->size;
-		prevNode->next = tempNext;
-		prevNode->size += tempSize;
-	}else
-		return;
-
-	return _kernel_combineNodes(prevNode);
-}
-
-/*static struct _kernel_AllocNode* _kernel_combineNodes(struct _kernel_AllocNode* node){
-
-}*/

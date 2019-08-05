@@ -3,6 +3,7 @@
 #include "NSOCoreUtils.h"
 #include "NSOBiosMaps.h"
 #include "NSOBochs.h"
+#include "NSOPaging.h"
 
 /*
 TODO: add restrictions on pages that are marked as unusable by ACPI memory map

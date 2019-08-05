@@ -1,6 +1,7 @@
 #include "NSOPCI.h"
 #include "NSOCoreUtils.h"
 #include "NSOBochs.h"
+#include "NSOAllocator.h"
 
 //Osdev impl vvvvvvvvvvvvvvv
 
@@ -58,7 +59,8 @@ struct kernel_pciDevice* kernel_pciSearchDevice(u16 vendorID, u16 deviceID){
 }
 
 struct kernel_pciDevice* kernel_pciIterSearchDevice(u16 vendorID, struct kernel_pciDevice* old){
-	struct kernel_pciBus* bus = &kernel_hostBus;
+	//struct kernel_pciBus* bus = &kernel_hostBus;
+	return NULL;
 }
 
 static struct kernel_pciDevice* _kernel_pciSearchDevice(struct kernel_pciBus* bus, u16 vendorID, u16 deviceID){

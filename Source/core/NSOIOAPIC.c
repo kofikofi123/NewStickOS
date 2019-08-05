@@ -8,8 +8,8 @@ struct kernel_IOAPIC _kernel_baseIO;
 static void _kernel_appendIOAPIC(struct kernel_IOAPIC*);
 
 
-static u32 _kernel_readIO(const struct kernel_IOAPIC*, u8);
-static void _kernel_writeIO(const struct kernel_IOAPIC*, u8, u32);
+//static u32 _kernel_readIO(const struct kernel_IOAPIC*, u8);
+//static void _kernel_writeIO(const struct kernel_IOAPIC*, u8, u32);
 
 void kernel_newIOAPIC(u8 ioapicID, u32 ioapicAddr, u32 gsib){
 	struct kernel_IOAPIC* io = kernel_malloc(sizeof(struct kernel_IOAPIC), 4);

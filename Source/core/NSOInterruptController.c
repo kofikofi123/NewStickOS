@@ -42,13 +42,15 @@ void kernel_initateInterruptController(){
 	u8 HAS_8259 = 0;
 
 	ACPI_TABLE_HEADER* header = NULL;
-
-	if (ACPI_FAILURE(AcpiGetTable("APIC", 1, &header)))
+	ACPI_STATUS temp;
+	if ((temp = ACPI_FAILURE(AcpiGetTable("APIC", 1, &header)))){
+		kernel_printfBOCHS("%s\n", AcpiFormatException(temp));
 		kernel_panic("Couldn't find MADT table");
+	}
 
 	u32* MADT = ((void*)header + sizeof(ACPI_TABLE_HEADER));
 
-	u32 local_APIC = *(MADT);
+	//u32 local_APIC = *(MADT);
 	u32 flags = *(MADT + 1);
 
 	HAS_8259 = (flags & 0x01);
@@ -79,7 +81,7 @@ static void _kernel_setupAPIC(){
 	kernel_init8259A();
 	kernel_initAPIC();
 
-	u32 acpi_version_reg = kernel_readAPICRegister(0x30);
+	//u32 acpi_version_reg = kernel_readAPICRegister(0x30);
 
 	kernel_setupTrapGate(_kernel_spurINT, 0x08, 0xFF, 0, 1, 1);
 	
@@ -102,7 +104,7 @@ static struct _kernel_irqNode* _kernel_allocateIRQ(u32 vector, char* deviceName,
 
 static void _kernel_appendIRQ(struct _kernel_irqNode* irq){
 	struct _kernel_irqNode* node = &_kernel_irqBaseNode;
-	struct _kernel_irqNode* temp = NULL;
+	//struct _kernel_irqNode* temp = NULL;
 
 	while (node->next != NULL){
 		node = node->next;

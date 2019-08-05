@@ -17,7 +17,7 @@
 
 extern u32 kernel_end;
 
-static void _kernel_apicTEST();
+//static void _kernel_apicTEST();
 
 void __attribute__((section("._main"))) kernel_main() {
 	u32 _kernel_end = (u32)&kernel_end;
@@ -44,6 +44,25 @@ void __attribute__((section("._main"))) kernel_main() {
 	//init kernel heaap
 	kernel_initAllocation();
 	
+	/*{
+		void* _kernel_testPointers[50] = {0};
+		volatile u8 i = 0;
+
+		kernel_debugAllocator();
+
+		for (i = 0; i < 50; i++){
+			_kernel_testPointers[i] = kernel_malloc(5, 1);
+		}
+
+		kernel_debugAllocator();
+
+		for (i = 0; i < 50; i += 2){
+			kernel_free(_kernel_testPointers[i]);
+			_kernel_testPointers[i] = NULL;
+		}
+
+		kernel_debugAllocator();
+	}*/
 	
 	//acpica 
 	if (ACPI_FAILURE(AcpiInitializeSubsystem()))
@@ -67,8 +86,8 @@ void __attribute__((section("._main"))) kernel_main() {
 		u8* madt_lead = madt_base8 + sizeof(ACPI_TABLE_HEADER) + 8;
 		u8* madt_end = madt_base8 + madt->Length;
 
-		struct kernel_IOAPIC* ioapic = NULL;
-		struct kernel_RedirectionIRQ* redirection = kernel_malloc(sizeof(struct kernel_RedirectionIRQ), 4);
+		//struct kernel_IOAPIC* ioapic = NULL;
+		//struct kernel_RedirectionIRQ* redirection = kernel_malloc(sizeof(struct kernel_RedirectionIRQ), 4);
 
 		while (madt_lead < madt_end){
 			u8 type = *(madt_lead);
@@ -83,46 +102,37 @@ void __attribute__((section("._main"))) kernel_main() {
 			}
 
 			madt_lead = madt_lead + length;
+
+			AcpiPutTable(madt);
 		}
 
-		kernel_free(redirection);
+		//kernel_free(redirection);
 	}
 
-	//memory allocator stress test
 	{
-		void* _kernel_testPointers[50] = {0};
-		volatile u8 i = 0;
-
-		for (i = 0; i < 50; i++){
-			_kernel_testPointers[i] = kernel_malloc(5, 1);
-		}
-
-		kernel_debugAllocator();
-	}
-
-	/*{
 		if (ACPI_FAILURE(AcpiInitializeObjects(ACPI_NO_EVENT_INIT))){
 			kernel_panic("Oh no ?");
 		}
 
 		ACPI_OBJECT obj;
 		ACPI_BUFFER tempBuffer = {.Length = sizeof(obj), .Pointer=&obj};
+		
+		ACPI_STATUS tmep = AcpiEvaluateObject(NULL, "\\_SB.PCI0", NULL, &tempBuffer);
 
-		ACPI_STATUS tmep = AcpiEvaluateObject(NULL, "\\_SB.PCI0._HID", NULL, &tempBuffer);
 
-		kernel_printfBOCHS(">>>>Okr: %s\n", AcpiFormatException(tmep));
-	}*/
-	
-	kernel_initateInterruptController();
+		kernel_printfBOCHS(">>>>Okr: %s | %d\n", AcpiFormatException(tmep));
+	}
+	//kernel_initateInterruptController();
 
 	//loops through the pci buses and generates nodes for each device present
-	kernel_enumeratePCI();
+	//kernel_enumeratePCI();
 
-	kernel_initHPET();
+	//kernel_initHPET();
+	
 
 	while (1){}	
 }
 
-static void _kernel_apicTEST(struct kernel_IRegs* regs){
+/*static void _kernel_apicTEST(struct kernel_IRegs* regs){
 	kernel_printfBOCHS("Testing\n");
-}
+}*/

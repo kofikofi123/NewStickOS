@@ -1,5 +1,7 @@
 #include "NSOMP.h"
 #include "NSOACPI.h"
+#include "NSOAPIC.h"
+#include "NSOCoreUtils.h"
 #include "NSOAllocator.h"
 
 static struct kernel_ProcessorInfo _kernel_bprocessors;

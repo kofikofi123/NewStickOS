@@ -103,7 +103,6 @@ void kernel_unmapAddress(u32 virtAddr){
 }
 
 void kernel_unmapIdentity(u32 from, u32 to){
-	u32 temp = from;
 	from = from & ~(0xFFF);
 	to = (to + 0x1000) & ~(0xFFF);
 	void(*unmappingFunction)(u32) = _kernel_unmapAddressN;
