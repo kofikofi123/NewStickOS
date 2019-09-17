@@ -28,36 +28,44 @@ section .text
 	global kernel_isrstub_end
 	
 kernel_isr0:
+	cli
 	extern kernel_divEX
 	push dword 0
 	isr_entry
 	call kernel_divEX
 	isr_clean
 	add esp, 4
+	sti
 	iret
 
 kernel_isr8:
+	cli
 	extern kernel_doubleFaultEX
 	isr_entry
 	call kernel_doubleFaultEX
 	isr_clean
 	add esp, 4
+	sti
 	iret
 
 kernel_isr13:
+	cli
 	extern kernel_generalProtectionEX
 	isr_entry
 	call kernel_generalProtectionEX
 	isr_clean
 	add esp, 4
+	sti
 	iret
 
 kernel_isr14:
+	cli
 	extern kernel_pagingEX
 	isr_entry
 	call kernel_pagingEX
 	isr_clean
 	add esp, 4
+	sti
 	iret
 
 ;I am going to use this neat trick linux does SOURCE: entry_32.s

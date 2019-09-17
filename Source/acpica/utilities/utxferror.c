@@ -317,10 +317,8 @@ AcpiInfo (
 
     ACPI_MSG_REDIRECT_BEGIN;
     AcpiOsPrintf (ACPI_MSG_INFO);
-
     va_start (ArgList, Format);
     AcpiOsVprintf (Format, ArgList);
-    AcpiOsPrintf ("\n");
     va_end (ArgList);
 
     ACPI_MSG_REDIRECT_END;

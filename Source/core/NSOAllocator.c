@@ -19,12 +19,11 @@ struct _kernel_AllocNode* end;
 
 static void* _kernel_allocatorReserveSpace(u32, u8);
 static struct _kernel_AllocNode* _kernel_findNearestPrevNode(const struct _kernel_AllocNode*);
-static u8 _kernel_extendHEAP(u32);
 
 void kernel_initAllocation(){
 	struct _kernel_AllocNode* temp = NULL;
 	temp = end = (struct _kernel_AllocNode*)0xC0000000;
-	if (!_kernel_extendHEAP(4))
+	if (!kernel_extendHEAP(24))
 		kernel_panic("Cannot setup kernel heap");
 
 	head.size = 0;
@@ -44,14 +43,17 @@ inline void* kernel_malloc(u32 allocSize, u8 alignment){
 static void* _kernel_allocatorReserveSpace(u32 allocSize, u8 alignment){
 	struct _kernel_AllocNode* currentNode = head.next;
 
-	u32 currentAddr, tempAddr, totalSize, nextAddr;
+	u32 currentAddr, tempAddr, totalSize, nodeSize;
 	u8 alignmentPadding, padding;
 
 	const u32 addingTemp = 6 + allocSize;
 
-	while (currentNode != NULL){
+	while (currentNode != NULL && currentNode != end){
 		currentAddr = tempAddr = (u32)currentNode + 6;
-		nextAddr = (u32)currentNode->next;
+
+		nodeSize = currentNode->size;
+		
+		//nextAddr = (u32)currentNode->next;
 		alignmentPadding = padding = 0;
 
 		if ((currentAddr % alignment) != 0){
@@ -69,24 +71,39 @@ static void* _kernel_allocatorReserveSpace(u32 allocSize, u8 alignment){
 			currentAddr = tempAddr + padding;
 		}
 
-		u32 diffAddr = (nextAddr - currentAddr);
-		if (diffAddr < sizeof(struct _kernel_AllocNode))
-			padding += diffAddr;
+		totalSize = addingTemp + alignmentPadding + padding;
+
+		
+		if (totalSize < sizeof(struct _kernel_AllocNode)){
+			u8 newPadding = (sizeof(struct _kernel_AllocNode) - totalSize);
+			totalSize += newPadding;
+			padding += newPadding;
+		}
+
+		u32 diff = nodeSize - totalSize;
+
+		if (diff < sizeof(struct _kernel_AllocNode)){
+			totalSize += diff;
+			padding += diff;
+		}
 		
 
-		totalSize = addingTemp + alignmentPadding + padding;
-		if (currentNode->size >= (totalSize))
+		if (nodeSize >= (totalSize))
 			break;
 		else
 			currentNode = currentNode->next;
 	}
 
+
 	void* final = currentNode, *finalTemp = final;
-	if (final != NULL){
+	if (final != NULL && final != end){
 		struct _kernel_AllocNode* prevNode = currentNode->prev, *nextNode = currentNode->next;
+
 
 		u32* sizeBlock = (u32*)(final);
 		u16* paddingBlock = (u16*)(final + 4 + alignmentPadding);
+		u32 oldSize = currentNode->size;
+
 
 		*sizeBlock = totalSize;
 		
@@ -95,18 +112,30 @@ static void* _kernel_allocatorReserveSpace(u32 allocSize, u8 alignment){
 		final = (finalTemp + 6 + alignmentPadding);
 
 		struct _kernel_AllocNode* newNode = (struct _kernel_AllocNode*)(finalTemp + totalSize);
-		
-		if (newNode < nextNode){
+		u32 newSize = oldSize - totalSize;
+
+		if (newSize > 0){
 			newNode->next = nextNode;
-			newNode->size = (u32)nextNode - (u32)newNode;
+			newNode->prev = prevNode;
+			newNode->size = oldSize - totalSize;
 
-			if (nextNode != end)
+			
+			if (nextNode != end){
+
 				nextNode->prev = newNode;
+			}
 
+			prevNode->next = newNode;
+			
+		}else{
+			prevNode->next = nextNode;
+			if (nextNode != end){
+
+				nextNode->prev = prevNode;
+			}
 		}
-		newNode->prev = prevNode;
-		prevNode->next = newNode;
-	}
+	}else
+		final = NULL;
 
 	return final;
 }
@@ -148,6 +177,7 @@ void kernel_free(void* ptr){
 	sizeBlock = (u32*)(ptr - 6 - alignmentPadding);
 	totalSize = *sizeBlock;
 
+
 	struct _kernel_AllocNode* node = (struct _kernel_AllocNode*)sizeBlock;
 	struct _kernel_AllocNode* prevNode = _kernel_findNearestPrevNode(node);
 	struct _kernel_AllocNode* nextNode = prevNode->next;
@@ -168,7 +198,7 @@ u32 kernel_allocatorSize(){
 	struct _kernel_AllocNode* current = head.next;
 	u32 size = 0;
 
-	while (current != NULL){
+	while (current != end){
 		size += current->size;
 		current = current->next;
 	}
@@ -179,13 +209,13 @@ u32 kernel_allocatorSize(){
 
 void kernel_debugAllocator(){
 	struct _kernel_AllocNode* curNode = head.next, *nextNode = NULL;
-	kernel_printStringBOCHS("\nStart\n");
+	kernel_printfBOCHS("\nStart\n");
 	while (curNode != NULL && curNode != end){
 		nextNode = curNode->next;
 		kernel_printfBOCHS("{\n\tAddr: %x\n\tSize: %x\n\tNext: %x\n}\n", (u32)curNode, curNode->size, (u32)nextNode);
 		curNode = nextNode;
 	}
-	kernel_printStringBOCHS("End\n");
+	kernel_printfBOCHS("End\n");
 }
 
 
@@ -204,12 +234,10 @@ static struct _kernel_AllocNode* _kernel_findNearestPrevNode(const struct _kerne
 	return temp;
 }
 
-static u8 _kernel_extendHEAP(u32 pages){
+u8 kernel_extendHEAP(u32 pages){
 	u32 temp = ((u32)end);
 
 	u32* tempA = kernel_vAllocatePage(temp, pages, 0x02);
-
-	//kernel_printfBOCHS("Allocated: %x\n", (u32)tempA);
 
 	if (tempA == NULL) return 0;
 

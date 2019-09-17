@@ -11,6 +11,7 @@ void* kernel_realloc(void*, u32, u8);
 void kernel_free(void*);
 
 u32 kernel_allocatorSize();
+u8 kernel_extendHEAP(u32);
 
 void kernel_debugAllocator();
 

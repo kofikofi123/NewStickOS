@@ -182,7 +182,6 @@ AcpiLoadTables (
 
     ACPI_FUNCTION_TRACE (AcpiLoadTables);
 
-
     /*
      * Install the default operation region handlers. These are the
      * handlers that are defined by the ACPI specification to be
@@ -195,7 +194,10 @@ AcpiLoadTables (
      * between AcpiInitializeSubsystem() and AcpiLoadTables() to use
      * their customized default region handlers.
      */
+
+
     Status = AcpiEvInstallRegionHandlers ();
+    
     if (ACPI_FAILURE (Status))
     {
         ACPI_EXCEPTION ((AE_INFO, Status, "During Region initialization"));
@@ -272,6 +274,7 @@ AcpiTbLoadNamespace (
      * Load the namespace. The DSDT is required, but any SSDT and
      * PSDT tables are optional. Verify the DSDT.
      */
+
     Table = &AcpiGbl_RootTableList.Tables[AcpiGbl_DsdtIndex];
 
     if (!AcpiGbl_RootTableList.CurrentTableCount ||

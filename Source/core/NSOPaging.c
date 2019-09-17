@@ -4,7 +4,7 @@
 #include "NSOBochs.h"
 
 extern u32 kernel_end;
-static u32* _kernel_local_pageDirectory;
+u32* kernel_pageDirectory;
 
 
 //static u32* _kernel_getPageDir(u32);
@@ -18,20 +18,20 @@ static void _kernel_loadPageDirectory(u16, u32, u8);
 static u8 _kernel_isPagingEnabled();
 
 void kernel_initPaging(){
-	_kernel_local_pageDirectory = kernel_allocatePage();
+	kernel_pageDirectory = kernel_allocatePage();
 
-	if (_kernel_local_pageDirectory == NULL)
+	if (kernel_pageDirectory == NULL)
 		kernel_panic("Unable to allocate page for page directory!");
 
 	for (u16 i = 0; i < 1024; i++)
-		_kernel_local_pageDirectory[i] = 0x02;
+		kernel_pageDirectory[i] = 0x02;
 
 	void* pt = kernel_allocatePage();
 	if (pt == NULL)
 		kernel_panic("Unable to allocate page for page table!");
 
 	u32 pt32 = (u32)pt;
-	u32 pd32 = (u32)_kernel_local_pageDirectory;
+	u32 pd32 = (u32)kernel_pageDirectory;
 
 	_kernel_loadPageDirectory(0, pt32, 0x02);
 	_kernel_loadPageDirectory(1023, pd32, 0x02);
@@ -39,7 +39,26 @@ void kernel_initPaging(){
 	kernel_mapAddress(pd32, pd32, 0x02);
 	kernel_mapAddress(pt32, pt32, 0x02);
 
-	kernel_loadPageDirectory(_kernel_local_pageDirectory);
+	kernel_loadPageDirectory(kernel_pageDirectory);
+}
+
+u32* kernel_createVirtualAddressSpace(){
+	u32* pageDir = kernel_allocatePage();
+	void* pt = kernel_allocatePage();
+
+
+	if (!pageDir || !pt){
+		kernel_free(pageDir);
+		kernel_free(pt);
+		return NULL;
+	}
+
+	kernel_memset(pageDir, 0, sizeof(u32) * 1024);
+
+	_kernel_loadPageDirectory(0, (u32)pt, 0x02);
+	_kernel_loadPageDirectory(1023, (u32)pageDir, 0x02);
+
+	return pageDir;
 }
 
 u8 kernel_mapAddress(u32 virtAddr, u32 physAddr, u8 flags){
@@ -165,11 +184,11 @@ void* kernel_getPhysicalAddress(u32 vAddr){ //todo, make better
 
 
 static inline u32* _kernel_getPageDirR(u32 virtAddr){
-	return &_kernel_local_pageDirectory[(virtAddr >> 22)];
+	return &kernel_pageDirectory[(virtAddr >> 22)];
 }
 
 static inline void _kernel_loadPageDirectory(u16 pId, u32 addr, u8 flags){
-	_kernel_local_pageDirectory[pId] = addr | flags | 0x01;
+	kernel_pageDirectory[pId] = addr | flags | 0x01;
 }
 
 void* kernel_vAllocatePage(u32 addr, u32 pages, u8 flags){

@@ -295,7 +295,6 @@ AcpiReallocateRootTable (
     ACPI_TABLE_DESC         *TableDesc;
     UINT32                  i, j;
 
-
     ACPI_FUNCTION_TRACE (AcpiReallocateRootTable);
 
 

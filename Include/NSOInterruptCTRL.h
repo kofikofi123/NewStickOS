@@ -10,5 +10,6 @@ void kernel_isrHandler(struct kernel_IRegs);
 void* kernel_requestIRQ(u32, char*, kernel_interruptHandle, u16);
 
 void kernel_overrideIsaIRQ(u8, u32, u16);
+u32 kernel_getIrqMapping(u8);
 
 #endif

@@ -484,11 +484,11 @@ AcpiTbParseFadt (
 
     /* Obtain the DSDT and FACS tables via their addresses within the FADT */
 
+
     AcpiTbInstallStandardTable (
         (ACPI_PHYSICAL_ADDRESS) AcpiGbl_FADT.XDsdt,
         ACPI_TABLE_ORIGIN_INTERNAL_PHYSICAL, FALSE, TRUE,
         &AcpiGbl_DsdtIndex);
-
     /* If Hardware Reduced flag is set, there is no FACS */
 
     if (!AcpiGbl_ReducedHardware)

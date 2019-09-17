@@ -67,9 +67,13 @@ void kernel_initateInterruptController(){
 	}
 }
 
-inline void kernel_overrideIsaIRQ(u8 isaIRQ, u32 gsibIRQ, u16 mpsFlags){
+void kernel_overrideIsaIRQ(u8 isaIRQ, u32 gsibIRQ, u16 mpsFlags){
 	_kernel_isaIrqMappings[isaIRQ] = gsibIRQ;
 	_kernel_isaMPS[isaIRQ] = mpsFlags;
+}
+
+u32 kernel_getIrqMapping(u8 irq){
+	return _kernel_isaIrqMappings[irq];
 }
 
 static void _kernel_setup8259A(){
@@ -149,13 +153,17 @@ void* kernel_requestIRQ(u32 vector, char* deviceName, kernel_interruptHandle han
 	return (void*)1; //fornow
 }
 
-void kernel_isrHandler(struct kernel_IRegs regs){//todo: check for spurious interrupts
+void kernel_isrHandler(struct kernel_IRegs regs){//todo: check for spurious interrupts and check for case of multi line interrupts
 	u32 vector = regs.error_code;
 
 	struct _kernel_irqNode* node = _kernel_searchIRQ(vector);
 
-	if (node != NULL)
+	//kernel_printfBOCHS("Interrupt: %x\n", vector);
+
+	if (node != NULL){
+		//kernel_printfBOCHS("Interrupt found\n");
 		node->handler(&regs);
+	}
 
 	_kernel_emitEOI(vector);
 	

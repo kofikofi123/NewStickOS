@@ -1,6 +1,7 @@
 #include "NSOIOAPIC.h"
 #include "NSOAllocator.h"
 #include "NSOPaging.h"
+#include "NSOCoreUtils.h"
 
 
 struct kernel_IOAPIC _kernel_baseIO;
@@ -37,13 +38,35 @@ void kernel_newIOAPIC(u8 ioapicID, u32 ioapicAddr, u32 gsib){
 }
 
 u32 kernel_readIOAPIC(const struct kernel_IOAPIC* io, u8 reg){
-	*(io->ioregsel) = (u32)reg;
+	*(io->ioregsel) = reg;
 	return *(io->iowin);
 }
 
 void kernel_writeIOAPIC(const struct kernel_IOAPIC* io, u8 reg, u32 value){
 	*(io->ioregsel) = (u32)reg;
 	*(io->iowin) = value;
+}
+
+void kernel_readRedirectionTable(const struct kernel_IOAPIC* ioapic, struct kernel_RedirectionIRQ* irq, u8 vector){
+	u8 reg = 0x10 | (vector << 1);
+
+	u32 p1 = kernel_readIOAPIC(ioapic, reg);
+	u32 p2 = kernel_readIOAPIC(ioapic, reg + 1);
+
+	kernel_memcpy(irq, &p1, 4);
+	kernel_memcpy(irq + 1, &p2, 4);
+
+}
+
+void kernel_writeRedirectionTable(const struct kernel_IOAPIC* ioapic, struct kernel_RedirectionIRQ* irq, u8 vector){
+	u8 reg = 0x10 | (vector << 1);
+
+	u32* temp = (u32*)irq;
+	u32 p1 = *temp;
+	u32 p2 = *(temp + 1);
+
+	kernel_writeIOAPIC(ioapic, reg, p1);
+	kernel_writeIOAPIC(ioapic, reg + 1, p2);
 }
 
 struct kernel_IOAPIC* kernel_getIOAPIC(u8 index){

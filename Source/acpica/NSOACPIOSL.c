@@ -5,15 +5,16 @@
 #include "NSOBochs.h"
 #include "NSOCoreUtils.h"
 #include "NSOPCI.h"
+#include <stdarg.h>
 
 
 ACPI_STATUS AcpiOsInitialize(){
-	kernel_printStringBOCHS("Initalizing ACPICA\n");
+	kernel_printfBOCHS("Initalizing ACPICA\n");
 	return AE_OK;
 }
 
 ACPI_STATUS AcpiOsTerminate(){
-	kernel_printStringBOCHS("Terminating ACPICA\n");
+	kernel_printfBOCHS("Terminating ACPICA\n");
 	return AE_OK;
 }
 
@@ -91,7 +92,6 @@ ACPI_STATUS AcpiOsGetPhysicalAddress(void* logicalAddress, ACPI_PHYSICAL_ADDRESS
 }
 
 void* AcpiOsAllocate(ACPI_SIZE size){
-	//kernel_printfBOCHS("Allocating: %x bytes\n", size);
 	return kernel_malloc(size, 1);
 }
 
@@ -110,7 +110,7 @@ BOOLEAN AcpiOsWriteable(void* Memory, ACPI_SIZE Length){
 ///////////////////////////////////////////////////////////////////////
 
 ACPI_THREAD_ID AcpiOsGetThreadId(){
-	return 0;
+	return 1;
 }
 
 ACPI_STATUS AcpiOsExecute(ACPI_EXECUTE_TYPE type, ACPI_OSD_EXEC_CALLBACK function, void* context){
@@ -312,13 +312,16 @@ ACPI_STATUS AcpiOsWritePciConfiguration(ACPI_PCI_ID *pciID, UINT32 reg, UINT64 v
 
 /////////////////////////////////////////////////////////////////////////////
 
-void ACPI_INTERNAL_VAR_XFACE AcpiOsPrintf(const char* format, ...){
-	kernel_printStringBOCHS(format); //for now
+void AcpiOsPrintf(const char* format, ...){
+	va_list v;
+	va_start(v, format);
+	kernel_vprintfBOCHS(format, v);
+	va_end(v);
 }
 
 
 void AcpiOsVprintf(const char* format, va_list list){
-	kernel_printfBOCHS("OK: \"%s\"", format);
+	kernel_vprintfBOCHS(format, list);
 }
 
 UINT64 AcpiOsGetTimer(){

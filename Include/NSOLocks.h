@@ -13,7 +13,8 @@ u8 kernel_testSpinlock(kernel_omniLock);
 
 u8 kernel_acquireMutex(kernel_omniLock);
 u8 kernel_tryMutex(kernel_omniLock);
-
 void kernel_releaseLock(kernel_omniLock);
+
+
 
 #endif

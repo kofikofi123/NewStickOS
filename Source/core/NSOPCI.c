@@ -216,5 +216,5 @@ void kernel_pciDebug(u8 bus, u8 device, u8 function){
 	}
 	u32 sl0 = kernel_pciReadConfig32(bus, device, function, 11);
 	kernel_printfBOCHS("Subsystem ID: %x\n\tSubsystem Vendor ID: %x\n", sl0 >> 16, sl0 & 0xFFFF);
-	kernel_printStringBOCHS("}\n");
+	kernel_printfBOCHS("}\n");
 }

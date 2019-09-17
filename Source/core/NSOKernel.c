@@ -14,6 +14,7 @@
 #include "NSOHPET.h"
 #include "NSOIOAPIC.h"
 #include "NSOInterruptCTRL.h"
+#include "NSOPIT.h"
 
 extern u32 kernel_end;
 
@@ -21,8 +22,8 @@ extern u32 kernel_end;
 
 void __attribute__((section("._main"))) kernel_main() {
 	u32 _kernel_end = (u32)&kernel_end;
-
-	kernel_printfBOCHS("Kernel end: %x\n", _kernel_end);
+	kernel_cli();
+	//kernel_printfBOCHS("Kernel end: %x\n", _kernel_end);
 	//grab memory pges
 	kernel_initMemMapB();
 	//init page allocator
@@ -44,39 +45,28 @@ void __attribute__((section("._main"))) kernel_main() {
 	//init kernel heaap
 	kernel_initAllocation();
 	
-	/*{
-		void* _kernel_testPointers[50] = {0};
-		volatile u8 i = 0;
-
-		kernel_debugAllocator();
-
-		for (i = 0; i < 50; i++){
-			_kernel_testPointers[i] = kernel_malloc(5, 1);
-		}
-
-		kernel_debugAllocator();
-
-		for (i = 0; i < 50; i += 2){
-			kernel_free(_kernel_testPointers[i]);
-			_kernel_testPointers[i] = NULL;
-		}
-
-		kernel_debugAllocator();
-	}*/
+	{
+		/*char test[4] = {'k', 'o', 'f', 'i'};
+		kernel_printfBOCHS("Combo tester: %#x | v%.2d | %s | %b\n", 0xDEADBEEF, 904, "kofi", 1);
+		kernel_printfBOCHS("Combo tester2: %#8.8x\n", 0xFF);
+		kernel_printfBOCHS("Combo tester3: %.4s\n", test);
+		kernel_printfBOCHS("Combo tester4: %#8.8x%#x (v%.2d %.4s)", 0xDEAFBEAD, 0x20, 32, test);*/
+	}
 	
 	//acpica 
 	if (ACPI_FAILURE(AcpiInitializeSubsystem()))
 		kernel_panic("Unable to init acpica subsystems");
 	
-	if (ACPI_FAILURE(AcpiInitializeTables(NULL, 16, FALSE)))
+	if (ACPI_FAILURE(AcpiInitializeTables(NULL, 16, TRUE)))
 		kernel_panic("Unable to init acpica tables");
-
 
 	{
 		ACPI_TABLE_HEADER* madt = NULL;
 
-		if (ACPI_FAILURE(AcpiGetTable("APIC", 1, &madt)))
+		if (ACPI_FAILURE(AcpiGetTable("APIC", 1, &madt))){
+			kernel_printfBOCHS("%x\n", madt);
 			kernel_panic("Can't find MADT table");
+		}
 
 		///////////////////////////////////_|_//////////////////////////////////
 		///////////////////////////////////_|_/////////////////////////////////
@@ -109,28 +99,19 @@ void __attribute__((section("._main"))) kernel_main() {
 		//kernel_free(redirection);
 	}
 
-	{
-		if (ACPI_FAILURE(AcpiInitializeObjects(ACPI_NO_EVENT_INIT))){
-			kernel_panic("Oh no ?");
-		}
 
-		ACPI_OBJECT obj;
-		ACPI_BUFFER tempBuffer = {.Length = sizeof(obj), .Pointer=&obj};
-		
-		ACPI_STATUS tmep = AcpiEvaluateObject(NULL, "\\_SB.PCI0", NULL, &tempBuffer);
-
-
-		kernel_printfBOCHS(">>>>Okr: %s | %d\n", AcpiFormatException(tmep));
-	}
-	//kernel_initateInterruptController();
+	kernel_initateInterruptController();
 
 	//loops through the pci buses and generates nodes for each device present
-	//kernel_enumeratePCI();
+	kernel_enumeratePCI();
+	kernel_initPIT();
+	kernel_initHPET();
 
-	//kernel_initHPET();
-	
 
-	while (1){}	
+	kernel_setTimer(1000);
+	//kernel_breakBOCHS();
+	kernel_sti();
+	while (1){}
 }
 
 /*static void _kernel_apicTEST(struct kernel_IRegs* regs){

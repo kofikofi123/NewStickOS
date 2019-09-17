@@ -26,7 +26,7 @@ struct _kernel_timerInfo _kernel_tiHead = {
 static u8 _kernel_numOfUsedTimers();
 static struct _kernel_timerInfo* _kernel_getLastTimer();
 //static void _kernel_appendTimer(struct _kernel_timerInfo*);
-static u8 _kernel_getNumTimerInBlock(u8);
+//static u8 _kernel_getNumTimerInBlock(u8);
 
 static u8 _kernel_timersAreConsumed();
 

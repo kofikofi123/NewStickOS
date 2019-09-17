@@ -1,11 +1,12 @@
 ata0: enabled=1, ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14
 ata0-master: type=cdrom, path=StickOS.iso, status=inserted
 boot: cdrom 
-romimage: file=/home/chair/newBOCHS/bochs/bios/BIOS-bochs-latest
+romimage: file=/home/erikchair/bochs-2.6.9/bios/BIOS-bochs-latest
 cpu: count=1, ips=1000000
 cpuid: vendor_string="THISISATEST!"
 display_library: x
 port_e9_hack: enabled=1
 magic_break: enabled=1
 pci: enabled=1, chipset=i440fx, slot1=pcivga
-vgaromimage: file=/home/chair/newBOCHS/bochs/bios/VGABIOS-lgpl-latest-cirrus
+vgaromimage: file=/home/erikchair/bochs-2.6.9/bios/VGABIOS-lgpl-latest-cirrus
+clock: sync=realtime, time0=local

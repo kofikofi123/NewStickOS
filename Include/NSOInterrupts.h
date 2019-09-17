@@ -4,9 +4,9 @@
 #include "DataType.h"
 
 #define KERNEL_DECLAR_INTERRUPT(NAME) \
-	void __attribute__((cdecl)) kernel_ ## NAME (struct kernel_IRegs)
+	void __attribute__((cdecl)) kernel_ ## NAME (struct kernel_IRegs*)
 #define KERNEL_DEFINE_INTERRUPT(NAME) \
-	void __attribute__((cdecl)) kernel_ ## NAME (struct kernel_IRegs registers)
+	void __attribute__((cdecl)) kernel_ ## NAME (struct kernel_IRegs* registers)
 #define KERNEL_ENCODE_IDT_FLAGS(p, dpl, d) \
 	0 | (p << 7) | (dpl << 6) | (d << 3)
 

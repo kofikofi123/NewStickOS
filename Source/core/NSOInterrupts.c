@@ -31,8 +31,6 @@ void kernel_initInterrupts(){
 
 	u8 *stubs_start = (u8*)&kernel_isrstub_start, *stubs_end = (u8*)&kernel_isrstub_end;
 	u8 temp_vector = 0x20;
-
-	kernel_printfBOCHS("%x | %x\n", (u32)stubs_start, (u32)stubs_end);
 	
 	while (stubs_start < stubs_end){
 		kernel_setupTrapGate(stubs_start, 0x08, temp_vector, 0, 1, 1);
