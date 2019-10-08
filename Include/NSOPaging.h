@@ -10,6 +10,8 @@ u8 kernel_mapIdentity(u32, u32, u8);
 
 u32* kernel_createVirtualAddressSpace();
 
+void kernel_copyPageDirectories(u32*, u32*, u32, u32);
+
 void kernel_unmapAddress(u32);
 void kernel_unmapIdentity(u32, u32);
 

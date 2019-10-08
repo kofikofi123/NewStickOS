@@ -44,21 +44,21 @@ void kernel_initPaging(){
 
 u32* kernel_createVirtualAddressSpace(){
 	u32* pageDir = kernel_allocatePage();
-	void* pt = kernel_allocatePage();
 
 
-	if (!pageDir || !pt){
-		kernel_free(pageDir);
-		kernel_free(pt);
+	if (!pageDir){
+		kernel_freePage(pageDir);
 		return NULL;
 	}
 
-	kernel_memset(pageDir, 0, sizeof(u32) * 1024);
-
-	_kernel_loadPageDirectory(0, (u32)pt, 0x02);
-	_kernel_loadPageDirectory(1023, (u32)pageDir, 0x02);
 
 	return pageDir;
+}
+
+void kernel_copyPageDirectories(u32* new, u32* old, u32 start, u32 pages){
+	u32 pageDir = start >> 22;
+	u32 pageTbl = (start >> 12) & 0x3FF;
+
 }
 
 u8 kernel_mapAddress(u32 virtAddr, u32 physAddr, u8 flags){

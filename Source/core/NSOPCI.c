@@ -20,7 +20,8 @@ static struct kernel_pciBus* _kernel_pciGetBus(u8);
 static void _kernel_pciAppendDeviceToBus(struct kernel_pciBus*, struct kernel_pciDevice*);
 static void _kernel_pciAppendBuses(struct kernel_pciBus*, struct kernel_pciBus*);
 static struct kernel_pciDevice* _kernel_pciCreateDevice(u16, u16, u8, u8, u8);
-static struct kernel_pciDevice* _kernel_pciSearchDevice(struct kernel_pciBus*, u16, u16);
+static struct kernel_pciDevice* _kernel_pciSearchDevice(struct kernel_pciBus*, u16, u16, struct kernel_pciDevice*);
+static struct kernel_pciDevice* _kernel_pciSearchDeviceByClass(struct kernel_pciBus*, u8, u8, struct kernel_pciDevice*);
 static struct kernel_pciBus* _kernel_pciCreateBus(u8);
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -44,27 +45,74 @@ void kernel_enumeratePCI(){//todo (other stuff)
 	_kernel_enumerateBus(0);
 }
 
-struct kernel_pciDevice* kernel_pciSearchDevice(u16 vendorID, u16 deviceID){
+struct kernel_pciDevice* kernel_pciSearchDevice(u16 vendorID, u16 deviceID, struct kernel_pciDevice* old){
 	struct kernel_pciBus* bus = &kernel_hostBus;
+
+	if (old)
+		bus = _kernel_pciGetBus(old->busNumber);
+
 	struct kernel_pciDevice* device = NULL;
 
 	while (bus != NULL){
-		device = _kernel_pciSearchDevice(bus, vendorID, deviceID);
+		device = _kernel_pciSearchDevice(bus, vendorID, deviceID, old);
 
-		if (device != NULL)
+		if (device)
 			break;
+
+		bus = bus->next;
 	}
 
 	return device;
 }
 
-struct kernel_pciDevice* kernel_pciIterSearchDevice(u16 vendorID, struct kernel_pciDevice* old){
-	//struct kernel_pciBus* bus = &kernel_hostBus;
-	return NULL;
+struct kernel_pciDevice* kernel_pciSearchDeviceByClass(u8 classID, u8 subClassID, struct kernel_pciDevice* old){
+	struct kernel_pciBus* bus = &kernel_hostBus;
+
+
+	if (old)
+		bus = _kernel_pciGetBus(old->busNumber);
+	
+
+	struct kernel_pciDevice* device = NULL;
+
+	while (bus != NULL){
+		device = _kernel_pciSearchDeviceByClass(bus, classID, subClassID, old);
+
+		if (device)
+			break;
+
+		bus = bus->next;
+	}
+
+	return device;
 }
 
-static struct kernel_pciDevice* _kernel_pciSearchDevice(struct kernel_pciBus* bus, u16 vendorID, u16 deviceID){
+static struct kernel_pciDevice* _kernel_pciSearchDeviceByClass(struct kernel_pciBus* bus, u8 classID, u8 subClassID, struct kernel_pciDevice* old){
+	
 	struct kernel_pciDevice* mainDevice = bus->devices;
+
+
+	if (old)
+		mainDevice = old->next;
+
+	while (mainDevice != NULL){
+		u32 line3 = kernel_pciReadConfig32(mainDevice->busNumber, mainDevice->deviceNumber, mainDevice->functionNumber, 2) >> 8;
+		u8 class = line3 >> 16;
+		u8 subClass = (line3 >> 8) & 0xFF;
+
+		if (class == classID && subClass == subClassID)
+			break;
+		mainDevice = mainDevice->next;
+	}
+
+	return mainDevice;
+}
+
+static struct kernel_pciDevice* _kernel_pciSearchDevice(struct kernel_pciBus* bus, u16 vendorID, u16 deviceID, struct kernel_pciDevice* old){
+	struct kernel_pciDevice* mainDevice = bus->devices;
+
+	if (!old)
+		mainDevice = old->next;
 
 	while (mainDevice != NULL){
 		if (mainDevice->vendorID == vendorID && mainDevice->deviceID == deviceID)
@@ -83,6 +131,15 @@ void kernel_pciWriteConfig32(u8 busNumber, u8 deviceNumber, u8 function, u8 reg,
 	kernel_out32(0xCFC, val);
 }
 
+void kernel_pciWriteConfig16(u8 busNumber, u8 deviceNumber, u8 function, u8 reg, u8 offset, u16 val){
+	u32 old = (kernel_pciReadConfig32(busNumber, deviceNumber, function, reg) >> (offset << 4)) & 0xFFFF0000;
+	return kernel_pciWriteConfig32(busNumber, deviceNumber, function, reg, old | val);
+}
+
+void kernel_pciWriteConfig8(u8 busNumber, u8 deviceNumber, u8 function, u8 reg, u8 offset, u8 val){
+	u32 old = (kernel_pciReadConfig32(busNumber, deviceNumber, function, reg) >> (offset << 4)) & 0xFFFFFF00;
+	return kernel_pciWriteConfig32(busNumber, deviceNumber, function, reg, old | val);
+}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static void _kernel_enumerateBus(u8 bus){

@@ -9,4 +9,5 @@ port_e9_hack: enabled=1
 magic_break: enabled=1
 pci: enabled=1, chipset=i440fx, slot1=pcivga
 vgaromimage: file=/home/erikchair/bochs-2.6.9/bios/VGABIOS-lgpl-latest-cirrus
-clock: sync=realtime, time0=local
+clock: sync=realtime
+debug: action=ignore, pci_ide=report, harddrv=report, PCI=report

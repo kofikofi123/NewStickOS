@@ -2,7 +2,7 @@ CC := i686-nos-gcc
 LD := i686-nos-ld
 NASM := nasm
 GII := genisoimage
-CFLAGS := -Wall -masm=intel -ffreestanding -m32 --std=c99 -IInclude -IInclude/acpica
+CFLAGS := -Wall -masm=intel -ffreestanding -g -m32 --std=c99 -IInclude -IInclude/acpica
 BUILD := ./Build
 BOCHS := bochs
 GIT := git
@@ -35,6 +35,9 @@ build: all
 
 build-debug: all
 	@$(LD) -T KernelLinkerScriptDebug.ld $(OBJECTS)
+
+build-map:
+	@$(LD) -T KernelLinkerScriptDebug.ld $(OBJECTS) -Map Stick.map
 
 git-save: $(CSOURCES) $(ASOURCES) $(BSOURCES)
 	@$(GIT) add .

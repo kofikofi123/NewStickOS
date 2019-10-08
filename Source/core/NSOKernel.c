@@ -15,6 +15,9 @@
 #include "NSOIOAPIC.h"
 #include "NSOInterruptCTRL.h"
 #include "NSOPIT.h"
+#include "NSOProcess.h"
+#include "NSOThread.h"
+#include "NSOSched.h"
 
 extern u32 kernel_end;
 
@@ -105,12 +108,13 @@ void __attribute__((section("._main"))) kernel_main() {
 	//loops through the pci buses and generates nodes for each device present
 	kernel_enumeratePCI();
 	kernel_initPIT();
-	kernel_initHPET();
+	//kernel_initHPET();
 
-
-	kernel_setTimer(1000);
-	//kernel_breakBOCHS();
 	kernel_sti();
+
+	kernel_detectATADevices();
+	//kernel_initScheduler();
+
 	while (1){}
 }
 

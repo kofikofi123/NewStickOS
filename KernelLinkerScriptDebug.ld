@@ -1,5 +1,6 @@
 ENTRY(kernel_main)
 OUTPUT("DiskContent/Stick.o")
+OUTPUT_FORMAT("elf32-i386")
 
 
 SECTIONS 

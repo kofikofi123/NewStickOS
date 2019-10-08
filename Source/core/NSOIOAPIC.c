@@ -48,7 +48,7 @@ void kernel_writeIOAPIC(const struct kernel_IOAPIC* io, u8 reg, u32 value){
 }
 
 void kernel_readRedirectionTable(const struct kernel_IOAPIC* ioapic, struct kernel_RedirectionIRQ* irq, u8 vector){
-	u8 reg = 0x10 | (vector << 1);
+	u8 reg = 0x10 + (vector << 1);
 
 	u32 p1 = kernel_readIOAPIC(ioapic, reg);
 	u32 p2 = kernel_readIOAPIC(ioapic, reg + 1);
@@ -59,7 +59,7 @@ void kernel_readRedirectionTable(const struct kernel_IOAPIC* ioapic, struct kern
 }
 
 void kernel_writeRedirectionTable(const struct kernel_IOAPIC* ioapic, struct kernel_RedirectionIRQ* irq, u8 vector){
-	u8 reg = 0x10 | (vector << 1);
+	u8 reg = 0x10 + (vector << 1);
 
 	u32* temp = (u32*)irq;
 	u32 p1 = *temp;
